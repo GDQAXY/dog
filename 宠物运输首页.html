@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>宠物运输 - 找师傅</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-actions span {
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        /* 搜索栏 */
+        .search-box {
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            flex: 1;
+            outline: none;
+            font-size: 14px;
+        }
+
+        /* 模式切换 */
+        .mode-toggle {
+            background: white;
+            margin: 15px;
+            border-radius: 12px;
+            padding: 4px;
+            display: flex;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        /* 筛选栏 */
+        .filter-bar {
+            background: white;
+            padding: 12px 15px;
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .filter-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-item {
+            padding: 6px 15px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            font-size: 13px;
+            color: #666;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .filter-item.active {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-color: #1976d2;
+        }
+
+        /* 统计信息 */
+        .stats-bar {
+            background: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* 地图视图 */
+        .map-view {
+            display: none;
+            height: calc(100vh - 220px);
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-view.active {
+            display: block;
+        }
+
+        .map-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(100, 149, 237, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100, 149, 237, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* 地图上的师傅标记 */
+        .driver-marker {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .marker-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .marker-avatar.busy {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            animation: pulse 2s infinite;
+        }
+
+        .marker-avatar.idle {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .marker-status {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .marker-status.busy {
+            background: #ff4757;
+        }
+
+        .marker-status.idle {
+            background: #2ecc71;
+        }
+
+        .marker-info {
+            margin-top: 5px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        /* 列表视图 */
+        .list-view {
+            padding: 15px;
+        }
+
+        .list-view.hidden {
+            display: none;
+        }
+
+        /* 师傅卡片 */
+        .driver-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        /* 卡片头部 */
+        .card-header {
+            padding: 15px;
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .driver-avatar-large {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            position: relative;
+        }
+
+        .driver-avatar-large.busy {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+        }
+
+        .driver-avatar-large.idle {
+            background: linear-gradient(135deg, #d4fc79, #96e6a1);
+        }
+
+        .status-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-badge.busy {
+            background: #ff4757;
+        }
+
+        .status-badge.idle {
+            background: #2ecc71;
+        }
+
+        .driver-main-info {
+            flex: 1;
+        }
+
+        .driver-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .driver-name {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .driver-rating {
+            color: #ffa502;
+            font-size: 13px;
+        }
+
+        .driver-meta {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .driver-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .driver-tag {
+            background: #f0f0f0;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .driver-tag.highlight {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        /* 运输中信息 */
+        .transport-info {
+            padding: 15px;
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border-left: 4px solid #ffc107;
+        }
+
+        .transport-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .transport-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ff9800;
+        }
+
+        .live-badge {
+            background: #ff4757;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .live-badge::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* 路线信息 */
+        .route-info {
+            margin-bottom: 12px;
+        }
+
+        .route-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .route-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .route-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .route-icon.start {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .route-icon.end {
+            background: #1dd1a1;
+            color: white;
+        }
+
+        .route-icon.via {
+            background: #74b9ff;
+            color: white;
+        }
+
+        .route-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .route-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .via-points {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-left: 38px;
+            margin-top: 8px;
+        }
+
+        .via-tag {
+            background: rgba(116, 185, 255, 0.2);
+            color: #0984e3;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        /* 实时画面预览 */
+        .live-preview {
+            margin-top: 12px;
+        }
+
+        .preview-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .preview-item {
+            aspect-ratio: 16/10;
+            background: linear-gradient(135deg, #2d3436, #636e72);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .preview-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .preview-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .preview-text {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
+        .preview-status {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 9px;
+        }
+
+        .preview-count {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 9px;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+        }
+
+        .progress-track {
+            flex: 1;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #1dd1a1);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* 当前位置 */
+        .current-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+        }
+
+        .location-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .location-info {
+            flex: 1;
+        }
+
+        .location-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .location-update {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* 空闲中信息 */
+        .idle-info {
+            padding: 15px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 4px solid #4caf50;
+        }
+
+        .idle-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4caf50;
+            margin-bottom: 10px;
+        }
+
+        .idle-details {
+            display: flex;
+            gap: 20px;
+        }
+
+        .idle-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 操作按钮 */
+        .card-actions {
+            display: flex;
+            padding: 12px 15px;
+            gap: 10px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #999;
+            font-size: 11px;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        /* 悬浮按钮 */
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+        }
+
+        .toast.active {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <span class="header-title">🚗 宠物运输</span>
+                <div class="header-actions">
+                    <span onclick="showToast('查看个人订单')">📋</span>
+                    <span onclick="showToast('客服咨询')">💬</span>
+                </div>
+            </div>
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="搜索师傅、路线、目的地">
+            </div>
+        </div>
+
+        <!-- 模式切换 -->
+        <div class="mode-toggle">
+            <button class="mode-btn active" onclick="switchMode('list')">
+                <span>📋</span> 列表
+            </button>
+            <button class="mode-btn" onclick="switchMode('map')">
+                <span>🗺️</span> 地图
+            </button>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+            <div class="filter-item active" onclick="filterDrivers('all')">全部</div>
+            <div class="filter-item" onclick="filterDrivers('idle')">🟢 空闲中</div>
+            <div class="filter-item" onclick="filterDrivers('busy')">🔴 运输中</div>
+            <div class="filter-item">📍 附近优先</div>
+            <div class="filter-item">⭐ 好评优先</div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value">18</div>
+                <div class="stat-label">在线师傅</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">6</div>
+                <div class="stat-label">空闲中</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">12</div>
+                <div class="stat-label">运输中</div>
+            </div>
+        </div>
+
+        <!-- 地图视图 -->
+        <div class="map-view" id="mapView">
+            <div class="map-grid"></div>
+
+            <!-- 师傅标记点 -->
+            <div class="driver-marker" style="top: 20%; left: 25%;" onclick="showDriverDetail(1)">
+                <div class="marker-avatar busy">🚐</div>
+                <div class="marker-info">李师傅 · 济南</div>
+            </div>
+
+            <div class="driver-marker" style="top: 40%; left: 60%;" onclick="showDriverDetail(2)">
+                <div class="marker-avatar idle">🚐</div>
+                <div class="marker-info">王师傅 · 空闲</div>
+            </div>
+
+            <div class="driver-marker" style="top: 60%; left: 30%;" onclick="showDriverDetail(3)">
+                <div class="marker-avatar busy">🚐</div>
+                <div class="marker-info">张师傅 · 天津</div>
+            </div>
+
+            <div class="driver-marker" style="top: 30%; left: 75%;" onclick="showDriverDetail(4)">
+                <div class="marker-avatar idle">🚐</div>
+                <div class="marker-info">刘师傅 · 空闲</div>
+            </div>
+
+            <div class="driver-marker" style="top: 70%; left: 65%;" onclick="showDriverDetail(5)">
+                <div class="marker-avatar busy">🚐</div>
+                <div class="marker-info">陈师傅 · 石家庄</div>
+            </div>
+        </div>
+
+        <!-- 列表视图 -->
+        <div class="list-view" id="listView">
+            <!-- 运输中师傅 1 -->
+            <div class="driver-card" data-status="busy">
+                <div class="card-header">
+                    <div class="driver-avatar-large busy">
+                        👨‍✈️
+                        <span class="status-badge busy">运输中</span>
+                    </div>
+                    <div class="driver-main-info">
+                        <div class="driver-name-row">
+                            <span class="driver-name">李师傅</span>
+                            <span class="driver-rating">⭐ 4.9</span>
+                        </div>
+                        <div class="driver-meta">专业宠物运输 · 5年经验 · 832单</div>
+                        <div class="driver-tags">
+                            <span class="driver-tag highlight">🚐 福特全顺专车</span>
+                            <span class="driver-tag">📹 实时监控</span>
+                            <span class="driver-tag">🌡️ 恒温空调</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="transport-info">
+                    <div class="transport-header">
+                        <div class="transport-status">
+                            <span>🚗</span> 正在运输中
+                        </div>
+                        <span class="live-badge">LIVE</span>
+                    </div>
+
+                    <!-- 路线信息 -->
+                    <div class="route-info">
+                        <div class="route-row">
+                            <div class="route-icon start">起</div>
+                            <div class="route-text">北京市朝阳区</div>
+                            <div class="route-time">08:30</div>
+                        </div>
+
+                        <div class="via-points">
+                            <span class="via-tag">📍 济南（当前）</span>
+                            <span class="via-tag">📍 徐州</span>
+                            <span class="via-tag">📍 南京</span>
+                        </div>
+
+                        <div class="route-row" style="margin-top: 8px;">
+                            <div class="route-icon end">终</div>
+                            <div class="route-text">上海市浦东新区</div>
+                            <div class="route-time">预计 18:00</div>
+                        </div>
+                    </div>
+
+                    <!-- 当前位置 -->
+                    <div class="current-location">
+                        <div class="location-icon">📍</div>
+                        <div class="location-info">
+                            <div class="location-text">G2京沪高速 · 济南服务区附近</div>
+                            <div class="location-update">2分钟前更新 · 车速 95km/h</div>
+                        </div>
+                    </div>
+
+                    <!-- 实时画面预览 -->
+                    <div class="live-preview">
+                        <div class="preview-label">
+                            <span>📹</span> 车内实时监控（12只宠物）
+                        </div>
+                        <div class="preview-grid">
+                            <div class="preview-item" onclick="viewLive(1)">
+                                <div class="preview-placeholder">
+                                    <div class="preview-icon">🐶</div>
+                                    <div class="preview-text">豆豆</div>
+                                </div>
+                                <span class="preview-status">正常</span>
+                            </div>
+                            <div class="preview-item" onclick="viewLive(1)">
+                                <div class="preview-placeholder">
+                                    <div class="preview-icon">🐱</div>
+                                    <div class="preview-text">咪咪</div>
+                                </div>
+                                <span class="preview-status">正常</span>
+                            </div>
+                            <div class="preview-item" onclick="viewLive(1)">
+                                <div class="preview-placeholder">
+                                    <div class="preview-icon">📹</div>
+                                    <div class="preview-text">全景</div>
+                                </div>
+                                <span class="preview-count">+9</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 进度 -->
+                    <div class="progress-bar">
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: 45%;"></div>
+                        </div>
+                        <span class="progress-text">45%</span>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn btn-secondary" onclick="contactDriver(1)">
+                        <span>💬</span> 联系师傅
+                    </button>
+                    <button class="action-btn btn-primary" onclick="viewOrder(1)">
+                        <span>📋</span> 查看详情
+                    </button>
+                </div>
+            </div>
+
+            <!-- 运输中师傅 2 -->
+            <div class="driver-card" data-status="busy">
+                <div class="card-header">
+                    <div class="driver-avatar-large busy">
+                        👩‍✈️
+                        <span class="status-badge busy">运输中</span>
+                    </div>
+                    <div class="driver-main-info">
+                        <div class="driver-name-row">
+                            <span class="driver-name">张师傅</span>
+                            <span class="driver-rating">⭐ 4.8</span>
+                        </div>
+                        <div class="driver-meta">专业宠物运输 · 3年经验 · 456单</div>
+                        <div class="driver-tags">
+                            <span class="driver-tag highlight">🚐 依维柯专车</span>
+                            <span class="driver-tag">📹 实时监控</span>
+                            <span class="driver-tag">🍼 喂食服务</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="transport-info">
+                    <div class="transport-header">
+                        <div class="transport-status">
+                            <span>🚗</span> 正在运输中
+                        </div>
+                        <span class="live-badge">LIVE</span>
+                    </div>
+
+                    <div class="route-info">
+                        <div class="route-row">
+                            <div class="route-icon start">起</div>
+                            <div class="route-text">广州市天河区</div>
+                            <div class="route-time">09:00</div>
+                        </div>
+
+                        <div class="via-points">
+                            <span class="via-tag">📍 长沙（当前）</span>
+                            <span class="via-tag">📍 武汉</span>
+                            <span class="via-tag">📍 郑州</span>
+                        </div>
+
+                        <div class="route-row" style="margin-top: 8px;">
+                            <div class="route-icon end">终</div>
+                            <div class="route-text">北京市朝阳区</div>
+                            <div class="route-time">预计 20:30</div>
+                        </div>
+                    </div>
+
+                    <div class="current-location">
+                        <div class="location-icon">📍</div>
+                        <div class="location-info">
+                            <div class="location-text">G4京港澳高速 · 长沙段</div>
+                            <div class="location-update">5分钟前更新 · 车速 100km/h</div>
+                        </div>
+                    </div>
+
+                    <div class="live-preview">
+                        <div class="preview-label">
+                            <span>📹</span> 车内实时监控（8只宠物）
+                        </div>
+                        <div class="preview-grid">
+                            <div class="preview-item" onclick="viewLive(2)">
+                                <div class="preview-placeholder">
+                                    <div class="preview-icon">🐕</div>
+                                    <div class="preview-text">金毛</div>
+                                </div>
+                                <span class="preview-status">正常</span>
+                            </div>
+                            <div class="preview-item" onclick="viewLive(2)">
+                                <div class="preview-placeholder">
+                                    <div class="preview-icon">🐩</div>
+                                    <div class="preview-text">贵宾</div>
+                                </div>
+                                <span class="preview-status">休息</span>
+                            </div>
+                            <div class="preview-item" onclick="viewLive(2)">
+                                <div class="preview-placeholder">
+                                    <div class="preview-icon">📹</div>
+                                    <div class="preview-text">全景</div>
+                                </div>
+                                <span class="preview-count">+6</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: 30%;"></div>
+                        </div>
+                        <span class="progress-text">30%</span>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn btn-secondary" onclick="contactDriver(2)">
+                        <span>💬</span> 联系师傅
+                    </button>
+                    <button class="action-btn btn-primary" onclick="viewOrder(2)">
+                        <span>📋</span> 查看详情
+                    </button>
+                </div>
+            </div>
+
+            <!-- 空闲中师傅 -->
+            <div class="driver-card" data-status="idle">
+                <div class="card-header">
+                    <div class="driver-avatar-large idle">
+                        👨‍✈️
+                        <span class="status-badge idle">空闲中</span>
+                    </div>
+                    <div class="driver-main-info">
+                        <div class="driver-name-row">
+                            <span class="driver-name">王师傅</span>
+                            <span class="driver-rating">⭐ 5.0</span>
+                        </div>
+                        <div class="driver-meta">专业宠物运输 · 6年经验 · 1024单</div>
+                        <div class="driver-tags">
+                            <span class="driver-tag highlight">🚐 奔驰商务车</span>
+                            <span class="driver-tag">📹 实时监控</span>
+                            <span class="driver-tag">🏆 金牌司机</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="idle-info">
+                    <div class="idle-status">
+                        <span>🟢</span> 当前空闲，可预约
+                    </div>
+                    <div class="idle-details">
+                        <div class="idle-item">
+                            <span>📍</span> 北京朝阳区
+                        </div>
+                        <div class="idle-item">
+                            <span>🚐</span> 可载8只
+                        </div>
+                        <div class="idle-item">
+                            <span>💰</span> ¥5/km
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn btn-secondary" onclick="contactDriver(3)">
+                        <span>💬</span> 联系咨询
+                    </button>
+                    <button class="action-btn btn-success" onclick="bookDriver(3)">
+                        <span>📅</span> 立即预约
+                    </button>
+                </div>
+            </div>
+
+            <!-- 空闲中师傅 2 -->
+            <div class="driver-card" data-status="idle">
+                <div class="card-header">
+                    <div class="driver-avatar-large idle">
+                        👩‍✈️
+                        <span class="status-badge idle">空闲中</span>
+                    </div>
+                    <div class="driver-main-info">
+                        <div class="driver-name-row">
+                            <span class="driver-name">刘师傅</span>
+                            <span class="driver-rating">⭐ 4.9</span>
+                        </div>
+                        <div class="driver-meta">专业宠物运输 · 4年经验 · 678单</div>
+                        <div class="driver-tags">
+                            <span class="driver-tag highlight">🚐 大通V90</span>
+                            <span class="driver-tag">📹 实时监控</span>
+                            <span class="driver-tag">🌙 夜间服务</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="idle-info">
+                    <div class="idle-status">
+                        <span>🟢</span> 当前空闲，可预约
+                    </div>
+                    <div class="idle-details">
+                        <div class="idle-item">
+                            <span>📍</span> 上海浦东新区
+                        </div>
+                        <div class="idle-item">
+                            <span>🚐</span> 可载6只
+                        </div>
+                        <div class="idle-item">
+                            <span>💰</span> ¥6/km
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn btn-secondary" onclick="contactDriver(4)">
+                        <span>💬</span> 联系咨询
+                    </button>
+                    <button class="action-btn btn-success" onclick="bookDriver(4)">
+                        <span>📅</span> 立即预约
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 悬浮按钮 - 发布需求 -->
+        <div class="fab" onclick="publishNeed()">
+            <span>+</span>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goHome()">
+                <span class="nav-icon">🏠</span>
+                <span>首页</span>
+            </div>
+            <div class="nav-item active">
+                <span class="nav-icon">🚗</span>
+                <span>运输</span>
+            </div>
+            <div class="nav-item" onclick="goOrders()">
+                <span class="nav-icon">📋</span>
+                <span>订单</span>
+            </div>
+            <div class="nav-item" onclick="goProfile()">
+                <span class="nav-icon">👤</span>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 切换列表/地图模式
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            if (mode === 'map') {
+                document.getElementById('mapView').classList.add('active');
+                document.getElementById('listView').classList.add('hidden');
+            } else {
+                document.getElementById('mapView').classList.remove('active');
+                document.getElementById('listView').classList.remove('hidden');
+            }
+        }
+
+        // 筛选师傅
+        function filterDrivers(type) {
+            document.querySelectorAll('.filter-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const cards = document.querySelectorAll('.driver-card');
+            cards.forEach(card => {
+                if (type === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    if (card.dataset.status === type) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+
+            showToast(type === 'all' ? '显示全部师傅' : type === 'idle' ? '显示空闲师傅' : '显示运输中师傅');
+        }
+
+        // 查看司机详情（地图标记）
+        function showDriverDetail(id) {
+            showToast('查看师傅 ' + id + ' 详情');
+        }
+
+        // 联系师傅
+        function contactDriver(id) {
+            showToast('正在呼叫李师傅...');
+        }
+
+        // 查看订单详情
+        function viewOrder(id) {
+            // 跳转到运输详情页
+            window.location.href = '宠物运输实时监控.html';
+        }
+
+        // 预约师傅
+        function bookDriver(id) {
+            showToast('预约成功，等待师傅确认');
+        }
+
+        // 查看实时画面
+        function viewLive(id) {
+            showToast('打开实时监控画面');
+        }
+
+        // 发布需求
+        function publishNeed() {
+            showToast('发布运输需求');
+        }
+
+        // 页面跳转
+        function goHome() {
+            window.location.href = '宠物之家小程序演示.html';
+        }
+
+        function goOrders() {
+            window.location.href = '宠物运输实时监控.html';
+        }
+
+        function goProfile() {
+            showToast('个人中心');
+        }
+
+        // 显示 Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2000);
+        }
+
+        // 模拟实时更新位置
+        setInterval(() => {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const current = parseInt(bar.style.width);
+                if (current < 100) {
+                    bar.style.width = (current + 1) + '%';
+                    bar.nextElementSibling.textContent = (current + 1) + '%';
+                }
+            });
+        }, 30000); // 每30秒更新一次
+    </script>
+</body>
+</html>

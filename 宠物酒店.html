@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>宠物酒店</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            padding: 15px;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-actions span {
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        /* 搜索栏 */
+        .search-box {
+            background: rgba(255,255,255,0.9);
+            border-radius: 25px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            flex: 1;
+            outline: none;
+            font-size: 14px;
+        }
+
+        /* 特色横幅 */
+        .hotel-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 15px;
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hotel-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .banner-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .banner-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .banner-features {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .banner-feature {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .banner-btn {
+            background: white;
+            color: #667eea;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        /* 筛选栏 */
+        .filter-section {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 10px;
+        }
+
+        .filter-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .filter-chip.active {
+            background: #e3f2fd;
+            border-color: #667eea;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        /* 酒店卡片 */
+        .hotel-list {
+            padding: 0 15px;
+        }
+
+        .hotel-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .hotel-image {
+            height: 180px;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .hotel-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #ff4757;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .hotel-favorite {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .hotel-image-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+
+        .img-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .img-dot.active {
+            background: white;
+        }
+
+        .hotel-info {
+            padding: 15px;
+        }
+
+        .hotel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .hotel-name {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .hotel-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .hotel-stars {
+            color: #ffa502;
+        }
+
+        .hotel-price {
+            text-align: right;
+        }
+
+        .price-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff4757;
+        }
+
+        .price-unit {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .hotel-location {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .hotel-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .hotel-tag {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .hotel-tag.highlight {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .hotel-services {
+            display: flex;
+            gap: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .service-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .service-item.highlight {
+            color: #ff4757;
+            font-weight: 500;
+        }
+
+        /* 实时监控指示器 */
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #ff4757;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* 宠物餐标签 */
+        .meal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: #2ed573;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .hotel-actions {
+            display: flex;
+            gap: 10px;
+            padding: 12px 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .btn-contact {
+            flex: 1;
+            padding: 10px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-book {
+            flex: 2;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 房型选择弹窗 */
+        .room-type-modal .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .room-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .room-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .room-item.selected {
+            border-color: #667eea;
+            background: #f3e5f5;
+        }
+
+        .room-image {
+            width: 100px;
+            height: 80px;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+
+        .room-info {
+            flex: 1;
+        }
+
+        .room-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .room-features {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .room-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .room-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff4757;
+        }
+
+        .room-select-btn {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #999;
+            font-size: 11px;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        /* 弹窗通用样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 414px;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+        }
+
+        .toast.active {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+
+        /* 日期选择 */
+        .date-picker-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .date-box {
+            flex: 1;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .date-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .date-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .date-arrow {
+            font-size: 20px;
+            color: #999;
+        }
+
+        .nights-count {
+            text-align: center;
+            font-size: 13px;
+            color: #667eea;
+            margin-top: 5px;
+        }
+
+        /* 宠物餐服务选择 */
+        .meal-service-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .meal-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .meal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .meal-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .meal-option.selected {
+            border-color: #667eea;
+            background: #f3e5f5;
+        }
+
+        .meal-icon {
+            font-size: 28px;
+            margin-right: 12px;
+        }
+
+        .meal-info {
+            flex: 1;
+        }
+
+        .meal-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .meal-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .meal-price {
+            font-size: 16px;
+            color: #ff4757;
+            font-weight: 600;
+        }
+
+        /* 订单监控页面 */
+        .monitor-section {
+            background: white;
+            margin: 15px;
+            border-radius: 16px;
+            padding: 15px;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .monitor-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .monitor-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: #2ed573;
+        }
+
+        .monitor-video {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monitor-video.playing {
+            background: linear-gradient(135deg, #0f0f23, #1a1a3e);
+        }
+
+        .video-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .video-text {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .video-time {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 12px;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 10px;
+            border-radius: 10px;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .video-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 订单信息卡片 */
+        .order-info-card {
+            background: white;
+            margin: 15px;
+            border-radius: 16px;
+            padding: 15px;
+        }
+
+        .order-info-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .order-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .order-info-item:not(:last-child) {
+            border-bottom: 1px dashed #f0f0f0;
+        }
+
+        .order-info-label {
+            color: #666;
+        }
+
+        .order-info-value {
+            font-weight: 500;
+        }
+
+        .order-info-value.highlight {
+            color: #ff4757;
+        }
+
+        /* 实时监控时间轴 */
+        .timeline-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #999;
+            width: 50px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            border-radius: 50%;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .timeline-dot.active {
+            background: #2ed573;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 监控按钮 */
+        .btn-monitor {
+            flex: 1;
+            padding: 10px;
+            background: linear-gradient(135deg, #2ed573, #1e90ff);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* 订单列表 */
+        .order-list-section {
+            padding: 0 15px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .order-hotel-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .order-status {
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .order-status.ongoing {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .order-status.completed {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .order-details {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .order-pet-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .order-info-text {
+            flex: 1;
+        }
+
+        .order-pet-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .order-date {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .order-room-type {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .order-actions-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-order-action {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-order-action.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <span class="back-btn" onclick="goBack()">←</span>
+                <span class="header-title">🏨 宠物酒店</span>
+                <div class="header-actions">
+                    <span onclick="showToast('客服')">💬</span>
+                    <span onclick="showToast('收藏')">❤️</span>
+                </div>
+            </div>
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="搜索酒店、城市、商圈">
+            </div>
+        </div>
+
+        <!-- 特色横幅 -->
+        <div class="hotel-banner">
+            <div class="banner-content">
+                <div class="banner-title">🌟 星级宠物酒店</div>
+                <div class="banner-subtitle">24小时管家服务 · 独立套房 · 实时监控 · 送餐上门</div>
+                <div class="banner-features">
+                    <div class="banner-feature">✓ 五星级环境</div>
+                    <div class="banner-feature">✓ 宠物餐配送</div>
+                    <div class="banner-feature">✓ 实时监控</div>
+                </div>
+                <div class="banner-btn" onclick="showToast('查看精选酒店')">查看精选</div>
+            </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-chip active">全部</div>
+                <div class="filter-chip">🌟 五星级酒店</div>
+                <div class="filter-chip">💰 性价比优选</div>
+                <div class="filter-chip">🏠 民宿式</div>
+                <div class="filter-chip">🏥 医疗配套</div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-chip">📍 附近优先</div>
+                <div class="filter-chip">🐶 狗狗专用</div>
+                <div class="filter-chip">🐱 猫咪专用</div>
+                <div class="filter-chip">📹 实时监控</div>
+                <div class="filter-chip">🏊 泳池</div>
+            </div>
+        </div>
+
+        <!-- 酒店列表 -->
+        <div class="hotel-list">
+            <!-- 酒店1 -->
+            <div class="hotel-card">
+                <div class="hotel-image">
+                    🏨
+                    <span class="hotel-badge">HOT 热销</span>
+                    <span class="hotel-favorite">🤍</span>
+                    <div class="hotel-image-dots">
+                        <div class="img-dot active"></div>
+                        <div class="img-dot"></div>
+                        <div class="img-dot"></div>
+                    </div>
+                </div>
+                <div class="hotel-info">
+                    <div class="hotel-header">
+                        <div>
+                            <div class="hotel-name">皇家宠物度假酒店</div>
+                            <div class="hotel-rating">
+                                <span class="hotel-stars">⭐⭐⭐⭐⭐</span>
+                                <span>4.9分 · 2000+评价</span>
+                            </div>
+                        </div>
+                        <div class="hotel-price">
+                            <div class="price-value">¥298</div>
+                            <div class="price-unit">起/晚</div>
+                        </div>
+                    </div>
+                    <div class="hotel-location">
+                        📍 朝阳区三里屯 · 距您2.3km
+                    </div>
+                    <div class="hotel-tags">
+                        <span class="hotel-tag highlight">🌟 五星级</span>
+                        <span class="hotel-tag">📹 实时监控</span>
+                        <span class="hotel-tag">🏊 宠物泳池</span>
+                        <span class="hotel-tag">🎾 游乐场</span>
+                        <span class="hotel-tag">🍽️ 送餐服务</span>
+                    </div>
+                    <div class="hotel-services">
+                        <div class="service-item highlight">🍖 定制餐食</div>
+                        <div class="service-item">🛁 SPA护理</div>
+                        <div class="service-item">🏥 24h医护</div>
+                    </div>
+                </div>
+                <div class="hotel-actions">
+                    <button class="btn-contact" onclick="contactHotel()">联系酒店</button>
+                    <button class="btn-book" onclick="showRoomModal()">选择房型</button>
+                </div>
+            </div>
+
+            <!-- 酒店2 -->
+            <div class="hotel-card">
+                <div class="hotel-image" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
+                    🏡
+                    <span class="hotel-badge" style="background: #2ed573;">NEW 新开</span>
+                    <span class="hotel-favorite">❤️</span>
+                    <div class="hotel-image-dots">
+                        <div class="img-dot active"></div>
+                        <div class="img-dot"></div>
+                    </div>
+                </div>
+                <div class="hotel-info">
+                    <div class="hotel-header">
+                        <div>
+                            <div class="hotel-name">喵星人之家精品酒店</div>
+                            <div class="hotel-rating">
+                                <span class="hotel-stars">⭐⭐⭐⭐⭐</span>
+                                <span>4.8分 · 856评价</span>
+                            </div>
+                        </div>
+                        <div class="hotel-price">
+                            <div class="price-value">¥198</div>
+                            <div class="price-unit">起/晚</div>
+                        </div>
+                    </div>
+                    <div class="hotel-location">
+                        📍 海淀区中关村 · 距您5.1km
+                    </div>
+                    <div class="hotel-tags">
+                        <span class="hotel-tag highlight">🐱 猫咪专享</span>
+                        <span class="hotel-tag">🌳 花园别墅</span>
+                        <span class="hotel-tag">🎣 猫爬架</span>
+                        <span class="hotel-tag">📹 实时监控</span>
+                        <span class="hotel-tag">🍽️ 送餐服务</span>
+                    </div>
+                    <div class="hotel-services">
+                        <div class="service-item highlight">🥫 进口猫粮</div>
+                        <div class="service-item">🧸 玩具陪伴</div>
+                        <div class="service-item">💇 美容护理</div>
+                    </div>
+                </div>
+                <div class="hotel-actions">
+                    <button class="btn-contact" onclick="contactHotel()">联系酒店</button>
+                    <button class="btn-book" onclick="showRoomModal()">选择房型</button>
+                </div>
+            </div>
+
+            <!-- 酒店3 -->
+            <div class="hotel-card">
+                <div class="hotel-image" style="background: linear-gradient(135deg, #d299c2, #fef9d7);">
+                    🏘️
+                    <span class="hotel-badge" style="background: #ffa502;">性价比</span>
+                    <span class="hotel-favorite">🤍</span>
+                    <div class="hotel-image-dots">
+                        <div class="img-dot active"></div>
+                        <div class="img-dot"></div>
+                        <div class="img-dot"></div>
+                    </div>
+                </div>
+                <div class="hotel-info">
+                    <div class="hotel-header">
+                        <div>
+                            <div class="hotel-name">爱宠家庭式寄养</div>
+                            <div class="hotel-rating">
+                                <span class="hotel-stars">⭐⭐⭐⭐</span>
+                                <span>4.6分 · 1200+评价</span>
+                            </div>
+                        </div>
+                        <div class="hotel-price">
+                            <div class="price-value">¥88</div>
+                            <div class="price-unit">起/晚</div>
+                        </div>
+                    </div>
+                    <div class="hotel-location">
+                        📍 昌平区回龙观 · 距您8.5km
+                    </div>
+                    <div class="hotel-tags">
+                        <span class="hotel-tag highlight">🏠 家庭式</span>
+                        <span class="hotel-tag">🐕 小型犬友好</span>
+                        <span class="hotel-tag">🌳 有院子</span>
+                    </div>
+                    <div class="hotel-services">
+                        <div class="service-item">🚶 每日遛弯</div>
+                        <div class="service-item">📸 照片反馈</div>
+                        <div class="service-item">🎾 陪玩服务</div>
+                    </div>
+                </div>
+                <div class="hotel-actions">
+                    <button class="btn-contact" onclick="contactHotel()">联系酒店</button>
+                    <button class="btn-book" onclick="showRoomModal()">选择房型</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goHome()">
+                <span class="nav-icon">🏠</span>
+                <span>首页</span>
+            </div>
+            <div class="nav-item active">
+                <span class="nav-icon">🏨</span>
+                <span>酒店</span>
+            </div>
+            <div class="nav-item" onclick="showOrders()">
+                <span class="nav-icon">📋</span>
+                <span>订单</span>
+            </div>
+            <div class="nav-item" onclick="showToast('我的')">
+                <span class="nav-icon">👤</span>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单列表页面 -->
+    <div class="modal" id="ordersModal" onclick="hideOrdersModal(event)">
+        <div class="modal-content" style="max-height: 90vh;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">📋 我的订单</div>
+                <div class="modal-close" onclick="hideOrdersModal()">×</div>
+            </div>
+
+            <div class="filter-row" style="margin-bottom: 15px;">
+                <div class="filter-chip active">全部</div>
+                <div class="filter-chip">进行中</div>
+                <div class="filter-chip">待评价</div>
+                <div class="filter-chip">已完成</div>
+            </div>
+
+            <div class="order-list-section">
+                <!-- 订单1 - 进行中 -->
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-hotel-name">🏨 皇家宠物度假酒店</span>
+                        <span class="order-status ongoing">入住中</span>
+                    </div>
+                    <div class="order-details">
+                        <div class="order-pet-avatar">🐶</div>
+                        <div class="order-info-text">
+                            <div class="order-pet-name">豆豆 - 豪华套房</div>
+                            <div class="order-date">2026-01-20 至 2026-01-25 (5晚)</div>
+                            <div class="order-room-type">🍽️ 主厨特制餐 | 📹 实时监控</div>
+                        </div>
+                    </div>
+                    <div class="order-actions-row">
+                        <button class="btn-order-action" onclick="contactHotel()">联系酒店</button>
+                        <button class="btn-order-action primary" onclick="showOrderDetail()">
+                            <span class="live-badge" style="margin-right: 5px;"><span class="live-dot"></span>LIVE</span>
+                            查看监控
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 订单2 - 待入住 -->
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-hotel-name">🏡 喵星人之家精品酒店</span>
+                        <span class="order-status" style="background: #fff3e0; color: #ff9800;">待入住</span>
+                    </div>
+                    <div class="order-details">
+                        <div class="order-pet-avatar">🐱</div>
+                        <div class="order-info-text">
+                            <div class="order-pet-name">咪咪 - 标准间</div>
+                            <div class="order-date">2026-02-01 至 2026-02-05 (4晚)</div>
+                            <div class="order-room-type">🍽️ 标准营养餐 | 📹 实时监控</div>
+                        </div>
+                    </div>
+                    <div class="order-actions-row">
+                        <button class="btn-order-action" onclick="showToast('已取消预订')">取消订单</button>
+                        <button class="btn-order-action primary" onclick="showToast('修改订单')">修改订单</button>
+                    </div>
+                </div>
+
+                <!-- 订单3 - 已完成 -->
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-hotel-name">🏘️ 爱宠家庭式寄养</span>
+                        <span class="order-status completed">已完成</span>
+                    </div>
+                    <div class="order-details">
+                        <div class="order-pet-avatar">🐕</div>
+                        <div class="order-info-text">
+                            <div class="order-pet-name">旺财 - 经济房</div>
+                            <div class="order-date">2026-01-10 至 2026-01-15 (5晚)</div>
+                            <div class="order-room-type">🍽️ 不含餐食</div>
+                        </div>
+                    </div>
+                    <div class="order-actions-row">
+                        <button class="btn-order-action" onclick="showToast('再次预订')">再次预订</button>
+                        <button class="btn-order-action primary" onclick="showToast('去评价')">评价</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单详情/实时监控页面 -->
+    <div class="modal" id="orderDetailModal" onclick="hideOrderDetailModal(event)">
+        <div class="modal-content" style="max-height: 95vh; overflow-y: auto;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">📹 实时监控</div>
+                <div class="modal-close" onclick="hideOrderDetailModal()">×</div>
+            </div>
+
+            <!-- 监控画面 -->
+            <div class="monitor-section">
+                <div class="monitor-header">
+                    <div class="monitor-title">
+                        🐶 豆豆的房间
+                        <span class="meal-badge">🍽️ 用餐中</span>
+                    </div>
+                    <div class="monitor-status">
+                        <span class="live-dot" style="background: #2ed573;"></span>
+                        在线
+                    </div>
+                </div>
+
+                <div class="monitor-video" id="monitorVideo">
+                    <div class="video-time" id="videoTime">12:30:45</div>
+                    <div class="video-icon">🎥</div>
+                    <div class="video-text">点击播放实时监控</div>
+                    <div class="video-controls">
+                        <div class="video-btn" onclick="toggleMute()">🔊</div>
+                        <div class="video-btn" onclick="togglePlay()">▶️</div>
+                        <div class="video-btn" onclick="toggleFullscreen()">⛶</div>
+                    </div>
+                </div>
+
+                <!-- 时间轴 -->
+                <div class="timeline-section">
+                    <div class="timeline-title">今日动态</div>
+                    <div class="timeline-item">
+                        <span class="timeline-time">12:30</span>
+                        <span class="timeline-dot active"></span>
+                        <div class="timeline-content">🍽️ 午餐时间 - 正在享用主厨特制餐</div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-time">11:00</span>
+                        <span class="timeline-dot"></span>
+                        <div class="timeline-content">🎾 户外玩耍 - 在花园玩球30分钟</div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-time">09:30</span>
+                        <span class="timeline-dot"></span>
+                        <div class="timeline-content">🛁 SPA护理 - 完成了毛发梳理</div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-time">08:00</span>
+                        <span class="timeline-dot"></span>
+                        <div class="timeline-content">🍽️ 早餐时间 - 营养餐已送达</div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-time">07:30</span>
+                        <span class="timeline-dot"></span>
+                        <div class="timeline-content">🌅 早安 - 护理员开始晨间护理</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 订单信息 -->
+            <div class="order-info-card">
+                <div class="order-info-title">📋 订单信息</div>
+                <div class="order-info-item">
+                    <span class="order-info-label">酒店名称</span>
+                    <span class="order-info-value">皇家宠物度假酒店</span>
+                </div>
+                <div class="order-info-item">
+                    <span class="order-info-label">房型</span>
+                    <span class="order-info-value">豪华套房（5㎡）</span>
+                </div>
+                <div class="order-info-item">
+                    <span class="order-info-label">入住日期</span>
+                    <span class="order-info-value">2026-01-20 至 2026-01-25</span>
+                </div>
+                <div class="order-info-item">
+                    <span class="order-info-label">宠物信息</span>
+                    <span class="order-info-value">豆豆（金毛，3岁）</span>
+                </div>
+                <div class="order-info-item">
+                    <span class="order-info-label">餐食服务</span>
+                    <span class="order-info-value highlight">主厨特制餐 ¥98/天</span>
+                </div>
+                <div class="order-info-item">
+                    <span class="order-info-label">订单金额</span>
+                    <span class="order-info-value highlight">¥1,980</span>
+                </div>
+            </div>
+
+            <!-- 快捷操作 -->
+            <div class="hotel-actions" style="margin: 0 15px 15px;">
+                <button class="btn-contact" onclick="contactHotel()">联系酒店</button>
+                <button class="btn-monitor" onclick="showToast('正在连接语音通话...')">
+                    📞 语音对讲
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 房型选择弹窗 -->
+    <div class="modal room-type-modal" id="roomModal" onclick="hideRoomModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">🏨 选择房型</div>
+                <div class="modal-close" onclick="hideRoomModal()">×</div>
+            </div>
+
+            <!-- 日期选择 -->
+            <div class="date-picker-row">
+                <div class="date-box">
+                    <div class="date-label">入住</div>
+                    <div class="date-value">01-20</div>
+                </div>
+                <div class="date-arrow">→</div>
+                <div class="date-box">
+                    <div class="date-label">离店</div>
+                    <div class="date-value">01-22</div>
+                </div>
+            </div>
+            <div class="nights-count">共2晚</div>
+
+            <!-- 房型列表 -->
+            <div class="room-list">
+                <div class="room-item selected" onclick="selectRoom(this)">
+                    <div class="room-image">🛏️</div>
+                    <div class="room-info">
+                        <div class="room-name">豪华套房（5㎡）</div>
+                        <div class="room-features">独立空调 · 24h监控 · 每日3次遛弯</div>
+                        <div class="room-price-row">
+                            <span class="room-price">¥298/晚</span>
+                            <span class="room-select-btn">已选</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="room-item" onclick="selectRoom(this)">
+                    <div class="room-image">🛏️</div>
+                    <div class="room-info">
+                        <div class="room-name">标准间（3㎡）</div>
+                        <div class="room-features">中央空调 · 24h监控 · 每日2次遛弯</div>
+                        <div class="room-price-row">
+                            <span class="room-price">¥198/晚</span>
+                            <span class="room-select-btn">选择</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="room-item" onclick="selectRoom(this)">
+                    <div class="room-image">🛏️</div>
+                    <div class="room-info">
+                        <div class="room-name">经济房（2㎡）</div>
+                        <div class="room-features">通风良好 · 每日清洁 · 每日2次遛弯</div>
+                        <div class="room-price-row">
+                            <span class="room-price">¥128/晚</span>
+                            <span class="room-select-btn">选择</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="room-item" onclick="selectRoom(this)">
+                    <div class="room-image">🏠</div>
+                    <div class="room-info">
+                        <div class="room-name">VIP别墅房（10㎡）</div>
+                        <div class="room-features">独立小院 · 专属管家 · 无限次遛弯 · SPA服务</div>
+                        <div class="room-price-row">
+                            <span class="room-price">¥588/晚</span>
+                            <span class="room-select-btn">选择</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 宠物餐服务 -->
+            <div class="meal-service-section">
+                <div class="meal-title">🍽️ 宠物餐服务（可选）</div>
+                <div class="meal-options">
+                    <div class="meal-option selected" onclick="selectMeal(this, 0)">
+                        <span class="meal-icon">🙅</span>
+                        <div class="meal-info">
+                            <div class="meal-name">不含餐食</div>
+                            <div class="meal-desc">自带宠物粮或由酒店提供基础喂养</div>
+                        </div>
+                        <span class="meal-price">免费</span>
+                    </div>
+                    <div class="meal-option" onclick="selectMeal(this, 38)">
+                        <span class="meal-icon">🍖</span>
+                        <div class="meal-info">
+                            <div class="meal-name">标准营养餐</div>
+                            <div class="meal-desc">优质宠粮+营养膏+定时喂食 每日2餐</div>
+                        </div>
+                        <span class="meal-price">¥38/天</span>
+                    </div>
+                    <div class="meal-option" onclick="selectMeal(this, 68)">
+                        <span class="meal-icon">🥩</span>
+                        <div class="meal-info">
+                            <div class="meal-name"> premium定制餐</div>
+                            <div class="meal-desc">鲜肉主食+蔬菜搭配+营养补充 每日3餐</div>
+                        </div>
+                        <span class="meal-price">¥68/天</span>
+                    </div>
+                    <div class="meal-option" onclick="selectMeal(this, 98)">
+                        <span class="meal-icon">👨‍🍳</span>
+                        <div class="meal-info">
+                            <div class="meal-name">主厨特制餐</div>
+                            <div class="meal-desc">根据宠物体质定制+新鲜食材+送餐上门 每日3餐</div>
+                        </div>
+                        <span class="meal-price">¥98/天</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 价格汇总 -->
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                    <span>房型费用</span>
+                    <span id="roomPrice">¥596</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                    <span>餐食费用</span>
+                    <span id="mealPrice">¥0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #ddd; font-size: 16px; font-weight: 600;">
+                    <span>总计</span>
+                    <span style="color: #ff4757;" id="totalPrice">¥596</span>
+                </div>
+            </div>
+
+            <button class="btn-full" onclick="bookRoom()">立即预订</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let selectedRoomPrice = 596;
+        let selectedMealPrice = 0;
+        let isPlaying = false;
+        let videoTimer = null;
+
+        function goBack() {
+            window.location.href = '宠物之家小程序演示.html';
+        }
+
+        function goHome() {
+            window.location.href = '宠物之家小程序演示.html';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2000);
+        }
+
+        function contactHotel() {
+            alert('联系酒店客服\n\n电话：400-888-8888\n微信：pet_hotel_001\n\n工作时间：8:00-22:00');
+        }
+
+        function showRoomModal() {
+            document.getElementById('roomModal').classList.add('active');
+        }
+
+        function hideRoomModal(event) {
+            if (!event || event.target.id === 'roomModal') {
+                document.getElementById('roomModal').classList.remove('active');
+            }
+        }
+
+        function selectRoom(element) {
+            document.querySelectorAll('.room-item').forEach(item => {
+                item.classList.remove('selected');
+                item.querySelector('.room-select-btn').textContent = '选择';
+            });
+            element.classList.add('selected');
+            element.querySelector('.room-select-btn').textContent = '已选';
+
+            // 更新价格
+            const priceText = element.querySelector('.room-price').textContent;
+            const price = parseInt(priceText.replace(/[^0-9]/g, ''));
+            const nights = 2; // 默认2晚
+            selectedRoomPrice = price * nights;
+            updateTotalPrice();
+        }
+
+        function selectMeal(element, price) {
+            document.querySelectorAll('.meal-option').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedMealPrice = price * 2; // 2晚
+            updateTotalPrice();
+        }
+
+        function updateTotalPrice() {
+            document.getElementById('roomPrice').textContent = '¥' + selectedRoomPrice;
+            document.getElementById('mealPrice').textContent = '¥' + selectedMealPrice;
+            document.getElementById('totalPrice').textContent = '¥' + (selectedRoomPrice + selectedMealPrice);
+        }
+
+        function bookRoom() {
+            const total = selectedRoomPrice + selectedMealPrice;
+            showToast('预订成功！订单金额 ¥' + total);
+            setTimeout(() => {
+                hideRoomModal();
+            }, 1500);
+        }
+
+        // 订单列表
+        function showOrders() {
+            document.getElementById('ordersModal').classList.add('active');
+        }
+
+        function hideOrdersModal(event) {
+            if (!event || event.target.id === 'ordersModal') {
+                document.getElementById('ordersModal').classList.remove('active');
+            }
+        }
+
+        // 订单详情/实时监控
+        function showOrderDetail() {
+            hideOrdersModal();
+            document.getElementById('orderDetailModal').classList.add('active');
+            startVideoTime();
+        }
+
+        function hideOrderDetailModal(event) {
+            if (!event || event.target.id === 'orderDetailModal') {
+                document.getElementById('orderDetailModal').classList.remove('active');
+                stopVideoTime();
+                isPlaying = false;
+            }
+        }
+
+        // 监控视频播放控制
+        function togglePlay() {
+            const video = document.getElementById('monitorVideo');
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                video.classList.add('playing');
+                video.querySelector('.video-icon').textContent = '📹';
+                video.querySelector('.video-text').textContent = '实时监控中...';
+                showToast('开始播放实时监控');
+            } else {
+                video.classList.remove('playing');
+                video.querySelector('.video-icon').textContent = '🎥';
+                video.querySelector('.video-text').textContent = '点击播放实时监控';
+                showToast('已暂停监控');
+            }
+        }
+
+        function toggleMute() {
+            showToast(isPlaying ? '已静音' : '请先开始播放');
+        }
+
+        function toggleFullscreen() {
+            showToast('全屏模式');
+        }
+
+        function startVideoTime() {
+            videoTimer = setInterval(() => {
+                const now = new Date();
+                const timeStr = now.toTimeString().split(' ')[0];
+                document.getElementById('videoTime').textContent = timeStr;
+            }, 1000);
+        }
+
+        function stopVideoTime() {
+            if (videoTimer) {
+                clearInterval(videoTimer);
+                videoTimer = null;
+            }
+        }
+
+        // 筛选功能
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                showToast('已筛选：' + this.textContent);
+            });
+        });
+
+        // 收藏功能
+        document.querySelectorAll('.hotel-favorite').forEach(fav => {
+            fav.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.textContent = this.textContent === '🤍' ? '❤️' : '🤍';
+                showToast(this.textContent === '❤️' ? '已收藏' : '取消收藏');
+            });
+        });
+    </script>
+</body>
+</html>

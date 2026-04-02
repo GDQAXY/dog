@@ -1,0 +1,60 @@
+<!-- 寄养页面 -->
+<view class="container">
+  <!-- 头部筛选 -->
+  <view class="header">
+    <view class="header-top">
+      <text class="header-title">宠物寄养</text>
+      <view class="map-btn" bindtap="toggleMap">
+        <text>🗺️</text>
+        <text>地图模式</text>
+      </view>
+    </view>
+    <view class="filter-tabs">
+      <view class="filter-tab {{currentFilter === 0 ? 'active' : ''}}" bindtap="switchFilter" data-index="0">距我最近</view>
+      <view class="filter-tab {{currentFilter === 1 ? 'active' : ''}}" bindtap="switchFilter" data-index="1">好评优先</view>
+      <view class="filter-tab {{currentFilter === 2 ? 'active' : ''}}" bindtap="switchFilter" data-index="2">价格最低</view>
+    </view>
+  </view>
+
+  <!-- 地图预览 -->
+  <view class="map-preview" wx:if="{{showMap}}">
+    <view class="map-placeholder">
+      <text class="map-icon">🗺️</text>
+      <text class="map-text">地图模式预览</text>
+      <text class="map-subtext">显示附近寄养家庭位置</text>
+    </view>
+    <view class="map-marker" style="top: 30%; left: 30%;">📍</view>
+    <view class="map-marker" style="top: 50%; left: 60%;">📍</view>
+    <view class="map-marker" style="top: 70%; left: 40%;">📍</view>
+  </view>
+
+  <!-- 寄养家庭列表 -->
+  <view class="host-list">
+    <view class="host-card" wx:for="{{hostList}}" wx:key="id" bindtap="onHostTap" data-item="{{item}}">
+      <view class="host-avatar" style="background: {{item.avatarBg}}">{{item.avatar}}</view>
+      <view class="host-info">
+        <view class="host-name-row">
+          <text class="host-name">{{item.name}}</text>
+          <text class="host-rating">⭐ {{item.rating}}</text>
+        </view>
+        <view class="host-location">
+          <text>📍 距您{{item.distance}} · {{item.address}}</text>
+        </view>
+        <view class="host-desc">{{item.desc}}</view>
+        <view class="host-tags">
+          <text class="tag" wx:for="{{item.tags}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+      <view class="host-price">
+        <text class="price">¥{{item.price}}</text>
+        <text class="price-unit">/天起</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-btn" bindtap="becomeHost">
+    <text class="btn-icon">🏠</text>
+    <text class="btn-text">成为养家</text>
+  </view>
+</view>

@@ -1,0 +1,3519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <title>宠物之家 - 小程序演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 手机容器 */
+        .phone-container {
+            width: 100%;
+            max-width: 430px;
+            background: #f5f7fa;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0,0,0,0.15);
+        }
+
+        @media (min-width: 431px) {
+            .phone-container {
+                min-height: 90vh;
+                max-height: 932px;
+                margin: 20px auto;
+                border-radius: 40px;
+                overflow: hidden;
+            }
+        }
+
+        /* 页面内容区 */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .page-content {
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            min-height: 100vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .page-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ===== 状态栏 ===== */
+        .status-bar {
+            height: 44px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-time {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        /* ===== 顶部导航 - 玻璃拟态 ===== */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 8px 16px 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .location-selector {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            padding: 6px 10px;
+            background: rgba(102, 126, 234, 0.08);
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+
+        .location-selector:active {
+            transform: scale(0.95);
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        /* ===== 搜索栏 ===== */
+        .search-box {
+            background: #f0f2f5;
+            border-radius: 20px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #999;
+            flex: 1;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus-within {
+            background: #e8eaf6;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            flex: 1;
+            outline: none;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .search-box input::placeholder {
+            color: #999;
+        }
+
+        .header-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            position: relative;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.08);
+            transition: all 0.3s;
+        }
+
+        .header-icon:active {
+            background: rgba(102, 126, 234, 0.15);
+            transform: scale(0.9);
+        }
+
+        .header-icon .badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background: #ff4757;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* ===== 轮播图 - 全宽沉浸 ===== */
+        .banner {
+            margin: 0 16px 20px;
+            overflow: hidden;
+            position: relative;
+            height: 180px;
+            border-radius: 20px;
+        }
+
+        .banner-slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 32px 24px;
+            color: white;
+            position: relative;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .banner-slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .banner-content h3 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .banner-content p {
+            font-size: 14px;
+            opacity: 0.95;
+            margin-bottom: 4px;
+        }
+
+        .banner-dots {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: white;
+            width: 20px;
+            border-radius: 3px;
+        }
+
+        /* ===== 宫格入口 - 扁平极简 ===== */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px 8px;
+            padding: 0 16px 24px;
+            background: white;
+            margin: 0 16px 12px;
+            border-radius: 20px;
+            padding-top: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .grid-item:active {
+            transform: scale(0.9);
+        }
+
+        .grid-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .grid-icon.blue { background: linear-gradient(135deg, #e3f2fd, #bbdefb); }
+        .grid-icon.green { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+        .grid-icon.orange { background: linear-gradient(135deg, #fff3e0, #ffe0b2); }
+        .grid-icon.pink { background: linear-gradient(135deg, #fce4ec, #f8bbd9); }
+        .grid-icon.purple { background: linear-gradient(135deg, #f3e5f5, #e1bee7); }
+        .grid-icon.red { background: linear-gradient(135deg, #ffebee, #ffcdd2); }
+        .grid-icon.cyan { background: linear-gradient(135deg, #e0f7fa, #b2ebf2); }
+        .grid-icon.yellow { background: linear-gradient(135deg, #fffde7, #fff9c4); }
+
+        .grid-item span {
+            font-size: 12px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* ===== Feed分类Tab ===== */
+        .feed-tabs {
+            background: white;
+            margin: 0 16px 12px;
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            position: sticky;
+            top: 68px;
+            z-index: 90;
+        }
+
+        .feed-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .feed-tab {
+            font-size: 15px;
+            color: #666;
+            padding: 6px 0;
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .feed-tab.active {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .feed-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        /* ===== 信息流卡片 ===== */
+        .feed-card {
+            background: white;
+            margin: 0 16px 12px;
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+        }
+
+        .feed-card:active {
+            transform: scale(0.98);
+        }
+
+        /* 服务类型卡片 */
+        .feed-service-card {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .feed-service-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .feed-service-info {
+            flex: 1;
+        }
+
+        .feed-service-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .feed-service-meta {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .feed-service-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .feed-service-tag {
+            background: #f0f2f5;
+            color: #666;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .feed-service-price {
+            text-align: right;
+        }
+
+        .feed-service-price .price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ff4757;
+        }
+
+        /* 社区帖子卡片 */
+        .feed-post-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .feed-post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .feed-post-user {
+            flex: 1;
+        }
+
+        .feed-post-username {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .feed-post-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .feed-post-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .feed-post-images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .feed-post-image {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .feed-post-actions {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 10px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .feed-post-action {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        /* 商品卡片 */
+        .feed-product-card {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .feed-product-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .feed-product-tag {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .feed-product-info {
+            flex: 1;
+        }
+
+        .feed-product-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .feed-product-desc {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .feed-product-price {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        /* 短视频卡片 */
+        .feed-video-card {
+            position: relative;
+            height: 200px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feed-video-cover {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            opacity: 0.6;
+        }
+
+        .feed-video-play {
+            width: 56px;
+            height: 56px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 2;
+        }
+
+        .feed-video-info {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            color: white;
+            z-index: 2;
+        }
+
+        .feed-video-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .feed-video-meta {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* ===== 横向滑动服务 - 内容优先 ===== */
+        .service-scroll {
+            background: white;
+            padding: 20px 0;
+            margin-bottom: 12px;
+            border-radius: 20px;
+            margin: 0 16px 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .section-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .section-more {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .service-list {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 16px;
+            gap: 12px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .service-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .service-card {
+            flex-shrink: 0;
+            width: 280px;
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+        }
+
+        .service-card:active {
+            transform: scale(0.98);
+        }
+
+        .service-img {
+            height: 140px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+        }
+
+        .service-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(255,255,255,0.95);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .service-info {
+            padding: 16px;
+        }
+
+        .service-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .service-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* ===== 我的宠物 - 卡片沉浸 ===== */
+        .my-pet-section {
+            padding: 0 16px;
+            margin-bottom: 20px;
+        }
+
+        .my-pet-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            padding: 24px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+
+        .my-pet-card:active {
+            transform: scale(0.98);
+        }
+
+        .pet-avatar-large {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .pet-info {
+            flex: 1;
+        }
+
+        .pet-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .pet-name span {
+            font-size: 14px;
+            opacity: 0.85;
+            font-weight: 400;
+        }
+
+        .pet-tasks {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .pet-task {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .pet-task.urgent {
+            background: rgba(255, 71, 87, 0.9);
+            animation: urgentPulse 2s infinite;
+        }
+
+        @keyframes urgentPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(255, 71, 87, 0); }
+        }
+
+        /* ===== 附近推荐 - 无边框扁平 ===== */
+        .section {
+            background: white;
+            padding: 20px 0;
+            margin-bottom: 12px;
+            border-radius: 20px;
+            margin: 0 16px 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .host-list {
+            padding: 0 16px;
+        }
+
+        .host-card {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid #f5f5f5;
+            background: #fafbfc;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+
+        .host-card:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .host-card:active {
+            background: #f0f2f5;
+            transform: scale(0.98);
+        }
+
+        .host-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            flex-shrink: 0;
+        }
+
+        .host-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .host-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .host-rating {
+            font-size: 12px;
+            color: #ff9500;
+            font-weight: 600;
+            background: rgba(255, 149, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .host-location {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .host-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .host-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #f0f2f5;
+            color: #666;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .host-price {
+            text-align: right;
+        }
+
+        .price-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ff4757;
+        }
+
+        .price-unit {
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* ===== 商品网格 - 大图优先 ===== */
+        .product-section {
+            background: white;
+            padding: 20px 0;
+            border-radius: 20px;
+            margin: 0 16px 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .product-scroll {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 16px;
+            gap: 12px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .product-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .product-card {
+            flex-shrink: 0;
+            width: 140px;
+            transition: all 0.3s;
+        }
+
+        .product-card:active {
+            transform: scale(0.95);
+        }
+
+        .product-img {
+            height: 140px;
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .product-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .product-name {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .current-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff4757;
+        }
+
+        .original-price {
+            font-size: 11px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        /* ===== 活动卡片 ===== */
+        .activity-section {
+            padding: 0 16px;
+            margin-bottom: 20px;
+        }
+
+        .activity-card {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 24px;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(245, 87, 108, 0.3);
+        }
+
+        .activity-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .activity-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .activity-desc {
+            font-size: 14px;
+            opacity: 0.95;
+            position: relative;
+        }
+
+        .activity-btn {
+            background: white;
+            color: #f5576c;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 16px;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .activity-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== 底部导航 - 玻璃拟态 ===== */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+            z-index: 1000;
+            border-radius: 24px 24px 0 0;
+        }
+
+        @media (min-width: 431px) {
+            .tab-bar {
+                border-radius: 0 0 40px 40px;
+            }
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #999;
+            font-size: 10px;
+            padding: 6px 24px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab-item.active {
+            color: #667eea;
+        }
+
+        .tab-item.active::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            width: 20px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .tab-icon {
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+
+        .tab-item:active .tab-icon {
+            transform: scale(0.85);
+        }
+
+        .tab-item.center {
+            margin-top: -20px;
+            padding: 0;
+        }
+
+        .tab-center-btn {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        }
+
+        .tab-center-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* ===== 其他页面样式 ===== */
+        .foster-header {
+            background: white;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .foster-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .foster-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .map-toggle {
+            background: #f5f5f5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .map-toggle:active {
+            background: #e8e8e8;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 24px;
+        }
+
+        .filter-tab {
+            font-size: 15px;
+            color: #666;
+            padding: 6px 0;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .filter-tab.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .filter-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .map-container {
+            height: 200px;
+            background: linear-gradient(135deg, #c3cfe2, #f5f7fa);
+            margin: -16px -16px 16px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-marker {
+            position: absolute;
+            font-size: 30px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* ===== AI医疗页面 ===== */
+        .ai-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 28px;
+            border-radius: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-card::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .ai-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .ai-desc {
+            font-size: 14px;
+            opacity: 0.95;
+            margin-bottom: 24px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .ai-btn {
+            background: white;
+            color: #667eea;
+            padding: 14px 32px;
+            border-radius: 28px;
+            border: none;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .ai-btn:active {
+            transform: scale(0.95);
+        }
+
+        .quick-symptoms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .symptom-tag {
+            background: #f5f5f5;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 24px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .symptom-tag:active {
+            background: #667eea;
+            color: white;
+            transform: scale(0.95);
+        }
+
+        .doctor-card {
+            display: flex;
+            gap: 14px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s;
+        }
+
+        .doctor-card:active {
+            background: #f8f9fa;
+            transform: scale(0.98);
+        }
+
+        .doctor-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            flex-shrink: 0;
+        }
+
+        .doctor-info {
+            flex: 1;
+        }
+
+        .doctor-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 6px;
+            color: #1a1a1a;
+        }
+
+        .doctor-meta {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .doctor-price {
+            color: #ff4757;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .consult-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            align-self: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .consult-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== 我的页面 - 完善版 ===== */
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px 30px;
+            color: white;
+            border-radius: 0 0 32px 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .profile-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .profile-avatar-wrap {
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            border: 3px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .vip-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 2px solid white;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .profile-info h3 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .level-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .profile-meta {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .profile-id {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .profile-setting {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 22px;
+            opacity: 0.9;
+            cursor: pointer;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .profile-setting:active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .stat-item h4 {
+            font-size: 20px;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .stat-item p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* 我的宠物卡片 */
+        .my-pets-section {
+            background: white;
+            margin: 16px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .pet-cards {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 4px;
+        }
+
+        .pet-cards::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pet-card-item {
+            flex-shrink: 0;
+            width: 140px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pet-card-item:active {
+            transform: scale(0.95);
+        }
+
+        .pet-avatar-large {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 10px;
+        }
+
+        .pet-name-mini {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .pet-breed {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .pet-health {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .add-pet-card {
+            flex-shrink: 0;
+            width: 100px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            cursor: pointer;
+            border: 2px dashed #ddd;
+            transition: all 0.3s;
+        }
+
+        .add-pet-card:active {
+            background: #e8e8e8;
+        }
+
+        .add-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .add-text {
+            font-size: 12px;
+        }
+
+        /* 钱包区域 */
+        .wallet-section {
+            background: white;
+            margin: 0 16px 16px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+        }
+
+        .wallet-section:active {
+            transform: scale(0.98);
+        }
+
+        .wallet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .wallet-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .wallet-more {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .wallet-item {
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        .wallet-item.highlight .wallet-value {
+            color: #ff4757;
+        }
+
+        .wallet-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .wallet-label {
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* 订单状态 */
+        .order-section {
+            background: white;
+            margin: 0 16px 16px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .order-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .order-all {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .order-status {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .status-item:active {
+            transform: scale(0.9);
+        }
+
+        .status-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .status-name {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        /* 我的服务格子 */
+        .service-menu-section {
+            background: white;
+            margin: 0 16px 16px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .service-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .service-grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .service-grid-item:active {
+            transform: scale(0.9);
+        }
+
+        .service-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .service-name {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 退出登录 */
+        .logout-btn {
+            margin: 20px 16px;
+            padding: 16px;
+            background: white;
+            color: #ff4757;
+            text-align: center;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+        }
+
+        .logout-btn:active {
+            background: #fff5f5;
+            transform: scale(0.98);
+        }
+
+        /* 菜单标签 */
+        .menu-tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            margin-right: 8px;
+        }
+
+        /* 菜单列表基础样式 */
+        .menu-list {
+            background: white;
+            margin: 16px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .menu-item:active {
+            background: #f9f9f9;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 14px;
+        }
+
+        .menu-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .menu-arrow {
+            color: #ccc;
+            font-size: 18px;
+        }
+
+        /* ===== 秒杀倒计时 ===== */
+        .countdown {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #ff4757;
+            font-weight: 600;
+        }
+
+        .countdown-item {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        /* ===== 社区页面样式 ===== */
+        .community-header {
+            background: white;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .community-tabs {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 4px;
+        }
+
+        .community-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .community-tab {
+            font-size: 15px;
+            color: #666;
+            padding: 8px 0;
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .community-tab.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .community-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .post-card {
+            background: white;
+            margin: 0 16px 12px;
+            padding: 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .post-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .post-user-info {
+            flex: 1;
+        }
+
+        .post-username {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .post-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .post-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .post-images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .post-image {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 12px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .post-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .post-action:active {
+            color: #667eea;
+            transform: scale(0.95);
+        }
+
+        /* ===== 加载动画 ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== Toast 提示 ===== */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 28px;
+            font-size: 14px;
+            z-index: 10001;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* ===== 发布弹窗 ===== */
+        .publish-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 9998;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .publish-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .publish-content {
+            background: white;
+            width: 100%;
+            max-width: 430px;
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+
+        .publish-modal.active .publish-content {
+            transform: translateY(0);
+        }
+
+        .publish-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .publish-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .publish-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .publish-option:active {
+            transform: scale(0.9);
+        }
+
+        .publish-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .publish-option span {
+            font-size: 12px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .publish-close {
+            margin-top: 24px;
+            padding: 16px;
+            text-align: center;
+            font-size: 16px;
+            color: #666;
+            border-top: 1px solid #f5f5f5;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span class="status-time" id="statusTime">9:41</span>
+            <div class="status-icons">
+                <span>📶</span>
+                <span>📡</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <!-- 首页 -->
+        <div id="page-home" class="page active">
+            <div class="header">
+                <div class="header-main">
+                    <div class="location-selector">📍 北京 ▼</div>
+                    <div class="search-box">
+                        <span>🔍</span>
+                        <input type="text" placeholder="搜索宠物服务、商品">
+                    </div>
+                    <div class="header-icon">🔔<i class="badge"></i></div>
+                </div>
+            </div>
+
+            <div class="page-content">
+                <!-- 轮播图 -->
+                <div class="banner">
+                    <div class="banner-slide active" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="banner-content">
+                            <h3>新人专享礼包</h3>
+                            <p>注册即领188元优惠券</p>
+                        </div>
+                    </div>
+                    <div class="banner-slide" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="banner-content">
+                            <h3>宠物寄养</h3>
+                            <p>认证养家，安全有保障</p>
+                        </div>
+                    </div>
+                    <div class="banner-slide" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="banner-content">
+                            <h3>AI智能问诊</h3>
+                            <p>24小时在线，3分钟获得专业建议</p>
+                        </div>
+                    </div>
+                    <div class="banner-dots">
+                        <div class="dot active" onclick="goToSlide(0)"></div>
+                        <div class="dot" onclick="goToSlide(1)"></div>
+                        <div class="dot" onclick="goToSlide(2)"></div>
+                    </div>
+                </div>
+
+                <!-- 宫格入口 -->
+                <div class="grid-menu">
+                    <div class="grid-item" onclick="switchPage('foster')">
+                        <div class="grid-icon blue">🏠</div>
+                        <span>寄养</span>
+                    </div>
+                    <div class="grid-item" onclick="switchPage('medical')">
+                        <div class="grid-icon green">⚕️</div>
+                        <span>医疗</span>
+                    </div>
+                    <div class="grid-item" onclick="switchPage('transport')">
+                        <div class="grid-icon orange">🚗</div>
+                        <span>运输</span>
+                    </div>
+                    <div class="grid-item" onclick="switchPage('shop')">
+                        <div class="grid-icon pink">🍖</div>
+                        <span>商城</span>
+                    </div>
+                    <div class="grid-item" onclick="switchPage('hotel')">
+                        <div class="grid-icon red">🏨</div>
+                        <span>酒店</span>
+                    </div>
+                    <div class="grid-item" onclick="switchPage('secondhand')">
+                        <div class="grid-icon cyan">📦</div>
+                        <span>闲置</span>
+                    </div>
+                    <div class="grid-item" onclick="switchPage('coupon')">
+                        <div class="grid-icon yellow">🎫</div>
+                        <span>领券</span>
+                    </div>
+                    <div class="grid-item" onclick="switchPage('community')">
+                        <div class="grid-icon blue">💬</div>
+                        <span>社区</span>
+                    </div>
+                </div>
+
+                <!-- 我的宠物 -->
+                <div class="my-pet-section">
+                    <div class="my-pet-card" onclick="showToast('查看宠物详情')">
+                        <div class="pet-avatar-large">🐶</div>
+                        <div class="pet-info">
+                            <div class="pet-name">豆豆 <span>金毛 · 3岁</span></div>
+                            <div class="pet-tasks">
+                                <span class="pet-task urgent">💊 待喂药</span>
+                                <span class="pet-task">💉 疫苗齐全</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 宠物运输动态 -->
+                <div class="service-scroll" style="margin-bottom: 12px;">
+                    <div class="section-title-row">
+                        <div class="section-title">🚗 宠物运输动态</div>
+                        <div class="section-more" onclick="switchPage('transport')">查看全部 ></div>
+                    </div>
+                    <div class="service-list">
+                        <div class="service-card" onclick="switchPage('transport')">
+                            <div class="service-img" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                                <span class="service-tag">热门路线</span>
+                                🚗
+                            </div>
+                            <div class="service-info">
+                                <div class="service-name">北京 → 上海</div>
+                                <div class="service-desc">专车直达 · 24小时达 · ¥680起</div>
+                            </div>
+                        </div>
+                        <div class="service-card" onclick="switchPage('transport')">
+                            <div class="service-img" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                                <span class="service-tag">航空</span>
+                                ✈️
+                            </div>
+                            <div class="service-info">
+                                <div class="service-name">北京 → 广州</div>
+                                <div class="service-desc">有氧舱 · 当日达 · ¥980起</div>
+                            </div>
+                        </div>
+                        <div class="service-card" onclick="switchPage('transport')">
+                            <div class="service-img" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                                <span class="service-tag">顺风车</span>
+                                🚙
+                            </div>
+                            <div class="service-info">
+                                <div class="service-name">北京 → 天津</div>
+                                <div class="service-desc">宠物友好 · 2小时达 · ¥150起</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 信息流卡片1：服务卡片 -->
+                <div class="feed-card" onclick="switchPage('foster')">
+                    <div class="feed-service-card">
+                        <div class="feed-service-img">🏠</div>
+                        <div class="feed-service-info">
+                            <div class="feed-service-name">李阿姨的家庭寄养</div>
+                            <div class="feed-service-meta">⭐ 4.9 · 朝阳区 · 距您 1.2km</div>
+                            <div class="feed-service-meta">有院子 · 已接128单 · 中小型犬/猫</div>
+                            <div class="feed-service-tags">
+                                <span class="feed-service-tag">热门</span>
+                                <span class="feed-service-tag">可接送</span>
+                            </div>
+                        </div>
+                        <div class="feed-service-price">
+                            <div class="price">¥45</div>
+                            <div style="font-size:11px;color:#999;">/天起</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 信息流卡片2：社区帖子 -->
+                <div class="feed-card">
+                    <div class="feed-post-header">
+                        <div class="feed-post-avatar">👩</div>
+                        <div class="feed-post-user">
+                            <div class="feed-post-username">豆豆妈妈</div>
+                            <div class="feed-post-time">2小时前 · 北京市</div>
+                        </div>
+                    </div>
+                    <div class="feed-post-content">
+                        今天带豆豆去公园玩，遇到了一只超级可爱的柯基！两只狗狗玩得好开心~ 🐶💕 #金毛日常 #宠物交友
+                    </div>
+                    <div class="feed-post-images">
+                        <div class="feed-post-image">🖼️</div>
+                        <div class="feed-post-image">🖼️</div>
+                        <div class="feed-post-image">🖼️</div>
+                    </div>
+                    <div class="feed-post-actions">
+                        <div class="feed-post-action">❤️ 128</div>
+                        <div class="feed-post-action">💬 23</div>
+                        <div class="feed-post-action">⭐ 45</div>
+                        <div class="feed-post-action">↗️ 分享</div>
+                    </div>
+                </div>
+
+                <!-- 信息流卡片3：商品卡片 -->
+                <div class="feed-card" onclick="showToast('进口冻干狗粮')">
+                    <div class="feed-product-card">
+                        <div class="feed-product-img">
+                            <span class="feed-product-tag">秒杀</span>
+                            🥩
+                        </div>
+                        <div class="feed-product-info">
+                            <div class="feed-product-name">进口冻干狗粮 500g</div>
+                            <div class="feed-product-desc">已有 1.2万+ 人拼单</div>
+                            <div class="feed-product-price">
+                                <span class="current-price">¥29</span>
+                                <span class="original-price">¥59</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 信息流卡片4：短视频 -->
+                <div class="feed-card" onclick="showToast('播放短视频')">
+                    <div class="feed-video-card">
+                        <div class="feed-video-cover"></div>
+                        <div class="feed-video-play">▶️</div>
+                        <div class="feed-video-info">
+                            <div class="feed-video-title">🐱 猫咪的日常Vlog</div>
+                            <div class="feed-video-meta">👤 猫奴小张 · 👁️ 3.4w · ❤️ 892</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 信息流卡片5：医院服务 -->
+                <div class="feed-card" onclick="showToast('瑞鹏宠物医院')">
+                    <div class="feed-service-card">
+                        <div class="feed-service-img" style="background: linear-gradient(135deg, #f093fb, #f5576c);">🏥</div>
+                        <div class="feed-service-info">
+                            <div class="feed-service-name">瑞鹏宠物医院（朝阳店）</div>
+                            <div class="feed-service-meta">⭐ 4.8 · 距您 1.5km · 24小时急诊</div>
+                            <div class="feed-service-meta">医保定点 · 微创手术 · 全科诊疗</div>
+                            <div class="feed-service-tags">
+                                <span class="feed-service-tag">急诊</span>
+                                <span class="feed-service-tag">医保</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 信息流卡片7：社区帖子2 -->
+                <div class="feed-card">
+                    <div class="feed-post-header">
+                        <div class="feed-post-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">👨‍⚕️</div>
+                        <div class="feed-post-user">
+                            <div class="feed-post-username">张医生</div>
+                            <div class="feed-post-time">昨天 · 认证医生</div>
+                        </div>
+                    </div>
+                    <div class="feed-post-content">
+                        【养宠知识】夏天到了，给狗狗驱虫很重要！建议每月一次体外驱虫，每三个月一次体内驱虫。有疑问可以咨询我~ 🐛💊 #宠物医疗 #驱虫
+                    </div>
+                    <div class="feed-post-images">
+                        <div class="feed-post-image">📋</div>
+                    </div>
+                    <div class="feed-post-actions">
+                        <div class="feed-post-action">❤️ 512</div>
+                        <div class="feed-post-action">💬 89</div>
+                        <div class="feed-post-action">⭐ 120</div>
+                        <div class="feed-post-action">↗️ 分享</div>
+                    </div>
+                </div>
+
+                <!-- 活动卡片 -->
+                <div class="activity-section">
+                    <div class="activity-card" onclick="showToast('邀请好友活动')">
+                        <div class="activity-title">🎁 邀请好友领现金</div>
+                        <div class="activity-desc">邀请好友成功注册，各得50元现金红包</div>
+                        <button class="activity-btn">立即邀请</button>
+                    </div>
+                </div>
+
+                <div style="height: 20px;"></div>
+            </div>
+        </div>
+
+        <!-- 寄养页面 -->
+        <div id="page-foster" class="page">
+            <div class="foster-header">
+                <div class="foster-top">
+                    <div class="foster-title">宠物寄养</div>
+                    <div class="map-toggle">🗺️ 地图模式</div>
+                </div>
+                <div class="filter-tabs">
+                    <div class="filter-tab active">距我最近</div>
+                    <div class="filter-tab">好评优先</div>
+                    <div class="filter-tab">价格最低</div>
+                </div>
+            </div>
+
+            <div class="page-content" style="padding-top: 0;">
+                <div class="map-container">
+                    <div style="text-align: center; color: #666;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">🗺️</div>
+                        <div>地图模式预览</div>
+                        <div style="font-size: 12px; margin-top: 5px;">显示附近寄养家庭位置</div>
+                    </div>
+                    <div class="map-marker" style="top: 30%; left: 30%;">📍</div>
+                    <div class="map-marker" style="top: 50%; left: 60%; animation-delay: 0.3s;">📍</div>
+                    <div class="map-marker" style="top: 70%; left: 40%; animation-delay: 0.6s;">📍</div>
+                </div>
+
+                <div class="section" style="margin-top: 0;">
+                    <div class="host-list">
+                        <div class="host-card" onclick="showToast('李阿姨的家')">
+                            <div class="host-avatar">👩</div>
+                            <div class="host-info">
+                                <div class="host-name">李阿姨的家 <span class="host-rating">⭐ 4.9</span></div>
+                                <div class="host-location">📍 距您1.2km · 朝阳区xx小区</div>
+                                <div class="host-location">🏠 90㎡两居室 · 有院子</div>
+                                <div class="host-tags">
+                                    <span class="tag">🐶 中小型犬</span>
+                                    <span class="tag">🐱 猫咪</span>
+                                    <span class="tag">已接128单</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥45</div>
+                                <div class="price-unit">/天起</div>
+                            </div>
+                        </div>
+
+                        <div class="host-card" onclick="showToast('张医生宠物之家')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #11998e, #38ef7d);">👨‍⚕️</div>
+                            <div class="host-info">
+                                <div class="host-name">张医生宠物之家 <span class="host-rating">⭐ 5.0</span></div>
+                                <div class="host-location">📍 距您2.1km · 宠物医院旁</div>
+                                <div class="host-location">🏥 兽医背景 · 专业护理</div>
+                                <div class="host-tags">
+                                    <span class="tag">🐶 全犬种</span>
+                                    <span class="tag">🐱 猫咪</span>
+                                    <span class="tag">🐰 异宠</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥80</div>
+                                <div class="price-unit">/天起</div>
+                            </div>
+                        </div>
+
+                        <div class="host-card" onclick="showToast('爱宠小姐姐')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">👩‍🦰</div>
+                            <div class="host-info">
+                                <div class="host-name">爱宠小姐姐 <span class="host-rating">⭐ 4.7</span></div>
+                                <div class="host-location">📍 距您3.5km · 海淀区xx公寓</div>
+                                <div class="host-location">🏠 60㎡一居室 · 全屋地毯</div>
+                                <div class="host-tags">
+                                    <span class="tag">🐱 猫咪专用</span>
+                                    <span class="tag">🐶 小型犬</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥35</div>
+                                <div class="price-unit">/天起</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI医疗页面 -->
+        <div id="page-medical" class="page">
+            <div class="foster-header">
+                <div class="foster-top">
+                    <div class="foster-title">宠物医疗</div>
+                    <div class="map-toggle" style="background: linear-gradient(135deg, #ff6b6b, #ee5a6f); color: white;">🚨 急诊通道</div>
+                </div>
+            </div>
+
+            <div class="page-content" style="padding-top: 0;">
+                <div class="section">
+                    <div class="grid-menu" style="grid-template-columns: repeat(4, 1fr); margin: 0; box-shadow: none;">
+                        <div class="grid-item" onclick="showToast('健康档案')">
+                            <div class="grid-icon green" style="width: 50px; height: 50px; font-size: 24px;">📋</div>
+                            <span>健康档案</span>
+                        </div>
+                        <div class="grid-item" onclick="showToast('疫苗记录')">
+                            <div class="grid-icon blue" style="width: 50px; height: 50px; font-size: 24px;">💉</div>
+                            <span>疫苗记录</span>
+                        </div>
+                        <div class="grid-item" onclick="showToast('驱虫记录')">
+                            <div class="grid-icon orange" style="width: 50px; height: 50px; font-size: 24px;">🐛</div>
+                            <span>驱虫记录</span>
+                        </div>
+                        <div class="grid-item" onclick="showToast('用药提醒')">
+                            <div class="grid-icon purple" style="width: 50px; height: 50px; font-size: 24px;">💊</div>
+                            <span>用药提醒</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="ai-card">
+                        <div class="ai-title">🤖 AI智能预诊</div>
+                        <div class="ai-desc">描述症状，AI快速分析可能原因，3分钟获得初步建议，必要时推荐就近医院</div>
+                        <button class="ai-btn" onclick="showToast('开始AI预诊')">开始预诊</button>
+                    </div>
+
+                    <div style="font-weight: 600; font-size: 16px; margin: 20px 0 15px; color: #333;">快速症状选择</div>
+                    <div class="quick-symptoms">
+                        <button class="symptom-tag">食欲不振</button>
+                        <button class="symptom-tag">呕吐</button>
+                        <button class="symptom-tag">腹泻</button>
+                        <button class="symptom-tag">精神萎靡</button>
+                        <button class="symptom-tag">咳嗽</button>
+                        <button class="symptom-tag">抓挠</button>
+                        <button class="symptom-tag">流眼泪</button>
+                        <button class="symptom-tag">跛行</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title-row">
+                        <div class="section-title">推荐医生</div>
+                        <div class="section-more">查看全部 ></div>
+                    </div>
+                    <div class="doctor-card" onclick="showToast('张医生')">
+                        <div class="doctor-avatar">👨‍⚕️</div>
+                        <div class="doctor-info">
+                            <div class="doctor-name">张医生</div>
+                            <div class="doctor-meta">三甲医院 | 10年经验 | 擅长内科</div>
+                            <div class="doctor-price">¥25/次 · 已帮助3000+宠物</div>
+                        </div>
+                        <button class="consult-btn">咨询</button>
+                    </div>
+                    <div class="doctor-card" onclick="showToast('李医生')">
+                        <div class="doctor-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);">👩‍⚕️</div>
+                        <div class="doctor-info">
+                            <div class="doctor-name">李医生</div>
+                            <div class="doctor-meta">宠物医院院长 | 15年经验 | 擅长外科</div>
+                            <div class="doctor-price">¥35/次 · 已帮助5000+宠物</div>
+                        </div>
+                        <button class="consult-btn">咨询</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title-row">
+                        <div class="section-title">附近医院</div>
+                        <div class="section-more">查看地图 ></div>
+                    </div>
+                    <div class="host-card" onclick="switchPage('medical')">
+                        <div class="host-avatar" style="background: linear-gradient(135deg, #ff6b6b, #ee5a6f);">🏥</div>
+                        <div class="host-info">
+                            <div class="host-name">瑞鹏宠物医院（朝阳店）<span class="host-rating">⭐ 4.8</span></div>
+                            <div class="host-location">📍 距您1.5km · 24小时急诊</div>
+                            <div class="host-tags">
+                                <span class="tag">医保定点</span>
+                                <span class="tag">微创手术</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 社区页面 -->
+        <div id="page-community" class="page">
+            <div class="community-header">
+                <div class="community-tabs">
+                    <div class="community-tab active">推荐</div>
+                    <div class="community-tab">关注</div>
+                    <div class="community-tab">热门</div>
+                    <div class="community-tab">金毛</div>
+                    <div class="community-tab">猫咪</div>
+                    <div class="community-tab">训练</div>
+                    <div class="community-tab">美食</div>
+                </div>
+            </div>
+
+            <div class="page-content" style="padding-top: 0;">
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-avatar">👩</div>
+                        <div class="post-user-info">
+                            <div class="post-username">豆豆妈妈</div>
+                            <div class="post-time">2小时前 · 北京市</div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        今天带豆豆去公园玩，遇到了一只超级可爱的柯基！两只狗狗玩得好开心~ 🐶💕 #金毛日常 #宠物交友
+                    </div>
+                    <div class="post-images">
+                        <div class="post-image">🖼️</div>
+                        <div class="post-image">🖼️</div>
+                        <div class="post-image">🖼️</div>
+                    </div>
+                    <div class="post-actions">
+                        <div class="post-action">❤️ 128</div>
+                        <div class="post-action">💬 23</div>
+                        <div class="post-action">⭐ 收藏</div>
+                        <div class="post-action">↗️ 分享</div>
+                    </div>
+                </div>
+
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">👨</div>
+                        <div class="post-user-info">
+                            <div class="post-username">铲屎官小王</div>
+                            <div class="post-time">5小时前 · 上海市</div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        分享一个训练狗狗定点大小便的小技巧，只用了3天就教会了！有需要的可以私信我~ 🐕✨ #宠物训练 #新手养狗
+                    </div>
+                    <div class="post-actions">
+                        <div class="post-action">❤️ 256</div>
+                        <div class="post-action">💬 45</div>
+                        <div class="post-action">⭐ 收藏</div>
+                        <div class="post-action">↗️ 分享</div>
+                    </div>
+                </div>
+
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">👩‍⚕️</div>
+                        <div class="post-user-info">
+                            <div class="post-username">张医生</div>
+                            <div class="post-time">昨天 · 认证医生</div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        【养宠知识】夏天到了，给狗狗驱虫很重要！建议每月一次体外驱虫，每三个月一次体内驱虫。有疑问可以咨询我~ 🐛💊 #宠物医疗 #驱虫
+                    </div>
+                    <div class="post-images">
+                        <div class="post-image">📋</div>
+                    </div>
+                    <div class="post-actions">
+                        <div class="post-action">❤️ 512</div>
+                        <div class="post-action">💬 89</div>
+                        <div class="post-action">⭐ 收藏</div>
+                        <div class="post-action">↗️ 分享</div>
+                    </div>
+                </div>
+
+                <div style="height: 20px;"></div>
+            </div>
+        </div>
+
+        <!-- 宠物运输页面 -->
+        <div id="page-transport" class="page">
+            <div class="foster-header">
+                <div class="foster-top">
+                    <div class="foster-title">宠物运输</div>
+                    <div class="map-toggle">🗺️ 路线规划</div>
+                </div>
+                <div class="filter-tabs">
+                    <div class="filter-tab active">专车托运</div>
+                    <div class="filter-tab">航空运输</div>
+                    <div class="filter-tab">火车托运</div>
+                    <div class="filter-tab">顺风车</div>
+                </div>
+            </div>
+            <div class="page-content" style="padding-top: 0;">
+                <div class="section" style="margin-top: 12px;">
+                    <div class="host-list">
+                        <div class="host-card" onclick="showToast('北京→上海 专线')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);">🚗</div>
+                            <div class="host-info">
+                                <div class="host-name">北京 → 上海 <span class="host-rating">⭐ 5.0</span></div>
+                                <div class="host-location">📍 专车直达 · 全程空调 · 实时定位</div>
+                                <div class="host-tags">
+                                    <span class="tag">24小时达</span>
+                                    <span class="tag">保险赠送</span>
+                                    <span class="tag">已运1.2万单</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥680</div>
+                                <div class="price-unit">/起</div>
+                            </div>
+                        </div>
+                        <div class="host-card" onclick="showToast('北京→广州 航空')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">✈️</div>
+                            <div class="host-info">
+                                <div class="host-name">北京 → 广州 <span class="host-rating">⭐ 4.9</span></div>
+                                <div class="host-location">📍 航空托运 · 有氧舱 · 专人陪护</div>
+                                <div class="host-tags">
+                                    <span class="tag">当日达</span>
+                                    <span class="tag">上门接送</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥980</div>
+                                <div class="price-unit">/起</div>
+                            </div>
+                        </div>
+                        <div class="host-card" onclick="showToast('北京→天津 顺风车')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">🚙</div>
+                            <div class="host-info">
+                                <div class="host-name">北京 → 天津 <span class="host-rating">⭐ 4.8</span></div>
+                                <div class="host-location">📍 顺风车 · 宠物友好司机</div>
+                                <div class="host-tags">
+                                    <span class="tag">2小时达</span>
+                                    <span class="tag">可拼车</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥150</div>
+                                <div class="price-unit">/起</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 宠物商城页面 -->
+        <div id="page-shop" class="page">
+            <div class="foster-header">
+                <div class="foster-top">
+                    <div class="foster-title">宠物商城</div>
+                    <div class="map-toggle">🛒 购物车</div>
+                </div>
+                <div class="filter-tabs">
+                    <div class="filter-tab active">推荐</div>
+                    <div class="filter-tab">主粮</div>
+                    <div class="filter-tab">零食</div>
+                    <div class="filter-tab">用品</div>
+                    <div class="filter-tab">保健</div>
+                </div>
+            </div>
+            <div class="page-content" style="padding-top: 0;">
+                <div class="product-section" style="margin-top: 12px;">
+                    <div class="product-scroll" style="flex-wrap: wrap; justify-content: space-between; padding: 0 16px;">
+                        <div class="product-card" style="width: 48%; margin-bottom: 12px;" onclick="showToast('进口狗粮')">
+                            <div class="product-img" style="height: 160px;">
+                                <span class="product-tag">热销</span>
+                                🥩
+                            </div>
+                            <div class="product-name">进口天然狗粮 5kg</div>
+                            <div class="product-price">
+                                <span class="current-price">¥299</span>
+                                <span class="original-price">¥399</span>
+                            </div>
+                        </div>
+                        <div class="product-card" style="width: 48%; margin-bottom: 12px;" onclick="showToast('猫罐头')">
+                            <div class="product-img" style="height: 160px;">
+                                <span class="product-tag">新品</span>
+                                🥫
+                            </div>
+                            <div class="product-name">进口猫罐头 85g*12</div>
+                            <div class="product-price">
+                                <span class="current-price">¥89</span>
+                                <span class="original-price">¥129</span>
+                            </div>
+                        </div>
+                        <div class="product-card" style="width: 48%; margin-bottom: 12px;" onclick="showToast('磨牙棒')">
+                            <div class="product-img" style="height: 160px;">
+                                🦴
+                            </div>
+                            <div class="product-name">耐咬磨牙棒 大号</div>
+                            <div class="product-price">
+                                <span class="current-price">¥29</span>
+                                <span class="original-price">¥49</span>
+                            </div>
+                        </div>
+                        <div class="product-card" style="width: 48%; margin-bottom: 12px;" onclick="showToast('猫砂')">
+                            <div class="product-img" style="height: 160px;">
+                                <span class="product-tag">-30%</span>
+                                🧹
+                            </div>
+                            <div class="product-name">豆腐猫砂 6L*4袋</div>
+                            <div class="product-price">
+                                <span class="current-price">¥69</span>
+                                <span class="original-price">¥99</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 宠物酒店页面 -->
+        <div id="page-hotel" class="page">
+            <div class="foster-header">
+                <div class="foster-top">
+                    <div class="foster-title">宠物酒店</div>
+                    <div class="map-toggle">🗺️ 地图</div>
+                </div>
+                <div class="filter-tabs">
+                    <div class="filter-tab active">距我最近</div>
+                    <div class="filter-tab">好评优先</div>
+                    <div class="filter-tab">价格最低</div>
+                    <div class="filter-tab">五星豪华</div>
+                </div>
+            </div>
+            <div class="page-content" style="padding-top: 0;">
+                <div class="section" style="margin-top: 12px;">
+                    <div class="host-list">
+                        <div class="host-card" onclick="showToast('豪华宠物酒店')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #ffd700, #ffaa00);">🏨</div>
+                            <div class="host-info">
+                                <div class="host-name">五星级宠物度假酒店 <span class="host-rating">⭐ 5.0</span></div>
+                                <div class="host-location">📍 距您3.2km · 独立别墅 · 恒温泳池</div>
+                                <div class="host-tags">
+                                    <span class="tag">24小时看护</span>
+                                    <span class="tag">SPA服务</span>
+                                    <span class="tag">监控直播</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥288</div>
+                                <div class="price-unit">/天起</div>
+                            </div>
+                        </div>
+                        <div class="host-card" onclick="showToast('精品宠物旅馆')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);">🏠</div>
+                            <div class="host-info">
+                                <div class="host-name">汪星人精品旅馆 <span class="host-rating">⭐ 4.8</span></div>
+                                <div class="host-location">📍 距您1.5km · 主题房间 · 社交活动</div>
+                                <div class="host-tags">
+                                    <span class="tag">每日遛狗</span>
+                                    <span class="tag">美容护理</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥128</div>
+                                <div class="price-unit">/天起</div>
+                            </div>
+                        </div>
+                        <div class="host-card" onclick="showToast('猫咪专属酒店')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">🐱</div>
+                            <div class="host-info">
+                                <div class="host-name">喵星人专属酒店 <span class="host-rating">⭐ 4.9</span></div>
+                                <div class="host-location">📍 距您2.8km · 猫咪专用 · 无狗环境</div>
+                                <div class="host-tags">
+                                    <span class="tag">猫爬架</span>
+                                    <span class="tag">每日梳毛</span>
+                                    <span class="tag">安静环境</span>
+                                </div>
+                            </div>
+                            <div class="host-price">
+                                <div class="price-num">¥168</div>
+                                <div class="price-unit">/天起</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 二手闲置页面 -->
+        <div id="page-secondhand" class="page">
+            <div class="foster-header">
+                <div class="foster-top">
+                    <div class="foster-title">二手闲置</div>
+                    <div class="map-toggle" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">➕ 发布闲置</div>
+                </div>
+                <div class="filter-tabs">
+                    <div class="filter-tab active">全部</div>
+                    <div class="filter-tab">用品转让</div>
+                    <div class="filter-tab">食品转让</div>
+                    <div class="filter-tab">求购</div>
+                </div>
+            </div>
+            <div class="page-content" style="padding-top: 0;">
+                <div class="section" style="margin-top: 12px;">
+                    <div class="host-list">
+                        <div class="host-card" onclick="showToast('猫爬架转让')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9);">🌳</div>
+                            <div class="host-info">
+                                <div class="host-name">九成新猫爬架 <span style="color: #ff4757; font-weight: 700;">¥120</span></div>
+                                <div class="host-location">📍 朝阳区 · 自提</div>
+                                <div class="host-tags">
+                                    <span class="tag">用品转让</span>
+                                    <span class="tag">9成新</span>
+                                    <span class="tag">可小刀</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="host-card" onclick="showToast('狗粮转让')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2);">🥩</div>
+                            <div class="host-info">
+                                <div class="host-name">进口狗粮（买多了）<span style="color: #ff4757; font-weight: 700;">¥180</span></div>
+                                <div class="host-location">📍 海淀区 · 可快递</div>
+                                <div class="host-tags">
+                                    <span class="tag">食品转让</span>
+                                    <span class="tag">未拆封</span>
+                                    <span class="tag">保质期剩6月</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="host-card" onclick="showToast('求购信息')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #fce4ec, #f8bbd9);">🔍</div>
+                            <div class="host-info">
+                                <div class="host-name">【求购】大型犬笼 <span style="color: #667eea; font-weight: 700;">预算¥200</span></div>
+                                <div class="host-location">📍 丰台区 · 求购</div>
+                                <div class="host-tags">
+                                    <span class="tag">求购</span>
+                                    <span class="tag">8成新以上</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="host-card" onclick="showToast('宠物推车')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb);">🛒</div>
+                            <div class="host-info">
+                                <div class="host-name">宠物推车（用过2次）<span style="color: #ff4757; font-weight: 700;">¥150</span></div>
+                                <div class="host-location">📍 西城区 · 自提/跑腿</div>
+                                <div class="host-tags">
+                                    <span class="tag">用品转让</span>
+                                    <span class="tag">95新</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 领券中心页面 -->
+        <div id="page-coupon" class="page">
+            <div class="foster-header">
+                <div class="foster-top">
+                    <div class="foster-title">领券中心</div>
+                </div>
+            </div>
+            <div class="page-content" style="padding-top: 0;">
+                <div class="activity-section" style="margin: 12px 16px;">
+                    <div class="activity-card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <div class="activity-title">🎁 新人专享券包</div>
+                        <div class="activity-desc">新用户可领取价值188元优惠券</div>
+                        <button class="activity-btn">立即领取</button>
+                    </div>
+                </div>
+                <div class="section" style="margin-top: 12px;">
+                    <div class="section-title-row">
+                        <div class="section-title">限时抢券</div>
+                    </div>
+                    <div class="host-list">
+                        <div class="host-card" onclick="showToast('领取满减券')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #ff4757, #ff6b81); font-size: 24px;">¥50</div>
+                            <div class="host-info">
+                                <div class="host-name">满299减50 <span style="background: #ff4757; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">即将抢完</span></div>
+                                <div class="host-location">📅 有效期至2026-04-30 · 全品类可用</div>
+                                <div class="host-tags">
+                                    <span class="tag">仅剩23张</span>
+                                    <span class="tag">每人限领1张</span>
+                                </div>
+                            </div>
+                            <div class="consult-btn" style="background: linear-gradient(135deg, #ff4757, #ff6b81);">立即领</div>
+                        </div>
+                        <div class="host-card" onclick="showToast('领取免邮券')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #11998e, #38ef7d); font-size: 20px;">免邮</div>
+                            <div class="host-info">
+                                <div class="host-name">全场免邮券</div>
+                                <div class="host-location">📅 有效期至2026-04-15 · 商城订单可用</div>
+                                <div class="host-tags">
+                                    <span class="tag">不限金额</span>
+                                    <span class="tag">剩余较多</span>
+                                </div>
+                            </div>
+                            <div class="consult-btn">立即领</div>
+                        </div>
+                        <div class="host-card" onclick="showToast('领取寄养券')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2); font-size: 24px;">8折</div>
+                            <div class="host-info">
+                                <div class="host-name">寄养服务8折券</div>
+                                <div class="host-location">📅 有效期至2026-05-01 · 首次寄养可用</div>
+                                <div class="host-tags">
+                                    <span class="tag">新客专享</span>
+                                    <span class="tag">最高减100</span>
+                                </div>
+                            </div>
+                            <div class="consult-btn">立即领</div>
+                        </div>
+                        <div class="host-card" onclick="showToast('领取医疗券')">
+                            <div class="host-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c); font-size: 24px;">¥30</div>
+                            <div class="host-info">
+                                <div class="host-name">问诊咨询立减30</div>
+                                <div class="host-location">📅 有效期至2026-04-20 · 在线问诊可用</div>
+                                <div class="host-tags">
+                                    <span class="tag">无门槛</span>
+                                </div>
+                            </div>
+                            <div class="consult-btn">立即领</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的页面 -->
+        <div id="page-profile" class="page">
+            <div class="profile-header">
+                <div class="profile-top">
+                    <div class="profile-avatar-wrap">
+                        <div class="profile-avatar">👤</div>
+                        <div class="vip-badge">VIP</div>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-name-row">
+                            <h3>宠物主人</h3>
+                            <span class="level-tag">Lv.5</span>
+                        </div>
+                        <p class="profile-meta">📍 北京 · 朝阳区 | 🐶 1只宠物</p>
+                        <p class="profile-id">ID: 88456621</p>
+                    </div>
+                    <div class="profile-setting" onclick="showToast('设置')">⚙️</div>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <h4>12</h4>
+                        <p>收藏</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4>86</h4>
+                        <p>关注</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4>1.2k</h4>
+                        <p>粉丝</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4>256</h4>
+                        <p>获赞</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-content" style="padding-top: 0;">
+                <!-- 我的宠物 -->
+                <div class="my-pets-section">
+                    <div class="section-header">
+                        <span class="section-title">🐾 我的宠物</span>
+                        <span class="section-more" onclick="showToast('管理宠物')">管理 ></span>
+                    </div>
+                    <div class="pet-cards">
+                        <div class="pet-card-item" onclick="showToast('豆豆详情')">
+                            <div class="pet-avatar-large">🐶</div>
+                            <div class="pet-name-mini">豆豆</div>
+                            <div class="pet-breed">金毛 · 3岁</div>
+                            <div class="pet-health">健康</div>
+                        </div>
+                        <div class="add-pet-card" onclick="showToast('添加宠物')">
+                            <div class="add-icon">+</div>
+                            <div class="add-text">添加宠物</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 我的钱包 -->
+                <div class="wallet-section" onclick="showToast('我的钱包')">
+                    <div class="wallet-header">
+                        <span class="wallet-title">💰 我的钱包</span>
+                        <span class="wallet-more">查看明细 ></span>
+                    </div>
+                    <div class="wallet-grid">
+                        <div class="wallet-item">
+                            <div class="wallet-value">¥1,280</div>
+                            <div class="wallet-label">余额</div>
+                        </div>
+                        <div class="wallet-item">
+                            <div class="wallet-value">12</div>
+                            <div class="wallet-label">优惠券</div>
+                        </div>
+                        <div class="wallet-item">
+                            <div class="wallet-value">3,580</div>
+                            <div class="wallet-label">积分</div>
+                        </div>
+                        <div class="wallet-item highlight">
+                            <div class="wallet-value">¥88</div>
+                            <div class="wallet-label">待返现</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 消息中心 -->
+                <div class="order-section" onclick="showToast('消息中心')">
+                    <div class="order-header">
+                        <span class="order-title">🔔 消息中心</span>
+                        <span class="order-all">查看全部 ></span>
+                    </div>
+                    <div class="order-status">
+                        <div class="status-item" onclick="event.stopPropagation();showToast('系统通知')">
+                            <div class="status-icon">📢</div>
+                            <div class="status-name">系统通知</div>
+                            <div class="status-badge">2</div>
+                        </div>
+                        <div class="status-item" onclick="event.stopPropagation();showToast('订单动态')">
+                            <div class="status-icon">📦</div>
+                            <div class="status-name">订单动态</div>
+                            <div class="status-badge">1</div>
+                        </div>
+                        <div class="status-item" onclick="event.stopPropagation();showToast('互动消息')">
+                            <div class="status-icon">💬</div>
+                            <div class="status-name">互动消息</div>
+                        </div>
+                        <div class="status-item" onclick="event.stopPropagation();showToast('客服对话')">
+                            <div class="status-icon">🎧</div>
+                            <div class="status-name">客服对话</div>
+                        </div>
+                        <div class="status-item" onclick="event.stopPropagation();showToast('服务提醒')">
+                            <div class="status-icon">⏰</div>
+                            <div class="status-name">服务提醒</div>
+                            <div class="status-badge">3</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 订单状态 -->
+                <div class="order-section">
+                    <div class="order-header">
+                        <span class="order-title">📋 我的订单</span>
+                        <span class="order-all" onclick="showToast('全部订单')">全部 ></span>
+                    </div>
+                    <div class="order-status">
+                        <div class="status-item" onclick="showToast('待付款')">
+                            <div class="status-icon">💳</div>
+                            <div class="status-name">待付款</div>
+                            <div class="status-badge">2</div>
+                        </div>
+                        <div class="status-item" onclick="showToast('待服务')">
+                            <div class="status-icon">⏳</div>
+                            <div class="status-name">待服务</div>
+                            <div class="status-badge">1</div>
+                        </div>
+                        <div class="status-item" onclick="showToast('进行中')">
+                            <div class="status-icon">🔄</div>
+                            <div class="status-name">进行中</div>
+                        </div>
+                        <div class="status-item" onclick="showToast('待评价')">
+                            <div class="status-icon">⭐</div>
+                            <div class="status-name">待评价</div>
+                            <div class="status-badge">3</div>
+                        </div>
+                        <div class="status-item" onclick="showToast('退款/售后')">
+                            <div class="status-icon">🛡️</div>
+                            <div class="status-name">退款/售后</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 我的服务 -->
+                <div class="service-menu-section">
+                    <div class="service-title">🎯 我的服务</div>
+                    <div class="service-grid">
+                        <div class="service-grid-item" onclick="showToast('我的发布')">
+                            <div class="service-icon">📝</div>
+                            <div class="service-name">我的发布</div>
+                        </div>
+                        <div class="service-grid-item" onclick="showToast('我的收藏')">
+                            <div class="service-icon">❤️</div>
+                            <div class="service-name">我的收藏</div>
+                        </div>
+                        <div class="service-grid-item" onclick="showToast('浏览记录')">
+                            <div class="service-icon">👁️</div>
+                            <div class="service-name">浏览记录</div>
+                        </div>
+                        <div class="service-grid-item" onclick="showToast('我的评价')">
+                            <div class="service-icon">💬</div>
+                            <div class="service-name">我的评价</div>
+                        </div>
+                        <div class="service-grid-item" onclick="showToast('会员中心')">
+                            <div class="service-icon">👑</div>
+                            <div class="service-name">会员中心</div>
+                        </div>
+                        <div class="service-grid-item" onclick="showToast('邀请有礼')">
+                            <div class="service-icon">🎁</div>
+                            <div class="service-name">邀请有礼</div>
+                        </div>
+                        <div class="service-grid-item" onclick="showToast('成为养家')">
+                            <div class="service-icon">🏠</div>
+                            <div class="service-name">成为养家</div>
+                        </div>
+                        <div class="service-grid-item" onclick="showToast('地址管理')">
+                            <div class="service-icon">📍</div>
+                            <div class="service-name">地址管理</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 更多功能 -->
+                <div class="menu-list">
+                    <div class="menu-item" onclick="showToast('帮助中心')">
+                        <div class="menu-icon" style="background: #e3f2fd; color: #1976d2;">❓</div>
+                        <div class="menu-text">帮助中心</div>
+                        <div class="menu-arrow">></div>
+                    </div>
+                    <div class="menu-item" onclick="showToast('联系客服')">
+                        <div class="menu-icon" style="background: #e8f5e9; color: #4caf50;">💬</div>
+                        <div class="menu-text">联系客服</div>
+                        <div class="menu-tag">在线</div>
+                        <div class="menu-arrow">></div>
+                    </div>
+                    <div class="menu-item" onclick="showToast('意见反馈')">
+                        <div class="menu-icon" style="background: #fff3e0; color: #ff9800;">✏️</div>
+                        <div class="menu-text">意见反馈</div>
+                        <div class="menu-arrow">></div>
+                    </div>
+                    <div class="menu-item" onclick="showToast('关于我们')">
+                        <div class="menu-icon" style="background: #f3e5f5; color: #9c27b0;">ℹ️</div>
+                        <div class="menu-text">关于我们</div>
+                        <div class="menu-arrow">></div>
+                    </div>
+                </div>
+
+                <div class="menu-list">
+                    <div class="menu-item" onclick="showToast('设置')">
+                        <div class="menu-icon" style="background: #eceff1; color: #607d8b;">⚙️</div>
+                        <div class="menu-text">设置</div>
+                        <div class="menu-arrow">></div>
+                    </div>
+                </div>
+
+                <div class="logout-btn" onclick="showToast('退出登录')">退出登录</div>
+
+                <div style="height: 40px;"></div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="tab-bar">
+            <div class="tab-item active" onclick="switchTab('home', this)">
+                <div class="tab-icon">🏠</div>
+                <span>首页</span>
+            </div>
+            <div class="tab-item center" onclick="showPublishModal()">
+                <div class="tab-center-btn">+</div>
+            </div>
+            <div class="tab-item" onclick="switchTab('profile', this)">
+                <div class="tab-icon">👤</div>
+                <span>我的</span>
+            </div>
+        </div>
+
+        <!-- 加载动画 -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Toast 提示 -->
+        <div class="toast" id="toast"></div>
+
+        <!-- 发布弹窗 -->
+        <div class="publish-modal" id="publishModal" onclick="closePublishModal(event)">
+            <div class="publish-content" onclick="event.stopPropagation()">
+                <div class="publish-title">发布</div>
+                <div class="publish-options">
+                    <div class="publish-option" onclick="showToast('发布寄养需求')">
+                        <div class="publish-icon" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb);">🏠</div>
+                        <span>寄养需求</span>
+                    </div>
+                    <div class="publish-option" onclick="showToast('发布二手商品')">
+                        <div class="publish-icon" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2);">📦</div>
+                        <span>二手闲置</span>
+                    </div>
+                    <div class="publish-option" onclick="showToast('申请成为养家')">
+                        <div class="publish-icon" style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9);">🏡</div>
+                        <span>成为养家</span>
+                    </div>
+                    <div class="publish-option" onclick="showToast('发布动态')">
+                        <div class="publish-icon" style="background: linear-gradient(135deg, #fce4ec, #f8bbd9);">📷</div>
+                        <span>发动态</span>
+                    </div>
+                </div>
+                <div class="publish-close" onclick="closePublishModal()">取消</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 状态栏时间更新
+        function updateStatusTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('statusTime').textContent = hours + ':' + minutes;
+        }
+        updateStatusTime();
+        setInterval(updateStatusTime, 60000);
+
+        // 页面切换
+        function switchPage(pageName) {
+            showLoading();
+            setTimeout(() => {
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                document.getElementById('page-' + pageName).classList.add('active');
+                hideLoading();
+            }, 300);
+        }
+
+        // Tab切换
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            el.classList.add('active');
+            switchPage(tabName);
+        }
+
+        // Feed Tab切换
+        function switchFeedTab(el) {
+            document.querySelectorAll('.feed-tab').forEach(item => {
+                item.classList.remove('active');
+            });
+            el.classList.add('active');
+            showToast('切换至：' + el.textContent);
+        }
+
+        // 显示加载动画
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        // 隐藏加载动画
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // Toast 提示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 发布弹窗
+        function showPublishModal() {
+            document.getElementById('publishModal').classList.add('active');
+        }
+
+        function closePublishModal(event) {
+            if (!event || event.target.id === 'publishModal' || event.target.classList.contains('publish-close')) {
+                document.getElementById('publishModal').classList.remove('active');
+            }
+        }
+
+        // 轮播图
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.banner-slide');
+        const dots = document.querySelectorAll('.dot');
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function goToSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, 4000);
+
+        // 症状标签点击
+        document.querySelectorAll('.symptom-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                showToast('已选择症状：' + this.textContent);
+            });
+        });
+
+        // 搜索框
+        document.querySelector('.search-box input').addEventListener('focus', function() {
+            this.placeholder = '请输入搜索内容...';
+        });
+
+        document.querySelector('.search-box input').addEventListener('blur', function() {
+            this.placeholder = '搜索宠物服务、商品';
+        });
+
+        // 秒杀倒计时
+        function updateCountdown() {
+            const now = new Date();
+            const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+            const diff = endOfDay - now;
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+
+            if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+            if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+            if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // 社区Tab切换
+        document.querySelectorAll('.community-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.community-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                showToast('切换至：' + this.textContent);
+            });
+        });
+
+        // 筛选Tab切换
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const parent = this.closest('.filter-tabs');
+                parent.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('宠物之家小程序演示已加载');
+        });
+    </script>
+</body>
+</html>

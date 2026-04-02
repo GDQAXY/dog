@@ -1,0 +1,37 @@
+<!-- 领券页面 -->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <text class="header-title">领券中心</text>
+  </view>
+
+  <!-- 新人专享 -->
+  <view class="new-user-card">
+    <text class="new-user-title">🎁 新人专享券包</text>
+    <text class="new-user-desc">新用户可领取价值188元优惠券</text>
+    <button class="new-user-btn" bindtap="claimNewUser">立即领取</button>
+  </view>
+
+  <!-- 优惠券列表 -->
+  <view class="section">
+    <text class="section-title">限时抢券</text>
+    <view class="coupon-list">
+      <view class="coupon-card" wx:for="{{coupons}}" wx:key="id" bindtap="claimCoupon" data-item="{{item}}">
+        <view class="coupon-left" style="background: {{item.bg}}">
+          <text class="coupon-value">{{item.value}}</text>
+        </view>
+        <view class="coupon-info">
+          <view class="coupon-name-row">
+            <text class="coupon-name">{{item.name}}</text>
+            <text class="coupon-tag" wx:if="{{item.tag}}">{{item.tag}}</text>
+          </view>
+          <text class="coupon-valid">📅 {{item.valid}}</text>
+          <view class="coupon-tags">
+            <text class="tag" wx:for="{{item.tags}}" wx:key="index">{{item}}</text>
+          </view>
+        </view>
+        <button class="claim-btn" style="background: {{item.btnBg}}">立即领</button>
+      </view>
+    </view>
+  </view>
+</view>

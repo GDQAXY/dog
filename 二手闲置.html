@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>二手闲置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            padding: 15px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-actions span {
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        /* 搜索栏 */
+        .search-box {
+            background: rgba(255,255,255,0.9);
+            border-radius: 25px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            flex: 1;
+            outline: none;
+            font-size: 14px;
+        }
+
+        /* 发布按钮 */
+        .publish-banner {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            margin: 15px;
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .publish-content {
+            flex: 1;
+        }
+
+        .publish-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .publish-desc {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .publish-btn {
+            background: white;
+            color: #e17055;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* 分类 */
+        .category-section {
+            background: white;
+            margin: 0 15px 15px;
+            border-radius: 16px;
+            padding: 20px 15px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .category-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .category-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: linear-gradient(135deg, #00b894, #00cec9);
+        }
+
+        .category-name {
+            font-size: 12px;
+            color: #333;
+        }
+
+        /* 筛选栏 */
+        .filter-section {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .filter-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .filter-chip.active {
+            background: #e0f7fa;
+            border-color: #00b894;
+            color: #00b894;
+            font-weight: 500;
+        }
+
+        /* 价格筛选 */
+        .price-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .price-input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .price-line {
+            color: #999;
+        }
+
+        .price-btn {
+            padding: 8px 16px;
+            background: #00b894;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* 商品列表 */
+        .product-section {
+            padding: 0 15px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .section-more {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .product-image {
+            height: 160px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #00b894;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .product-badge.new {
+            background: #ff6b6b;
+        }
+
+        .product-badge.urgent {
+            background: #e17055;
+        }
+
+        .product-favorite {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .product-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.4;
+        }
+
+        .product-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .current-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e17055;
+        }
+
+        .original-price {
+            font-size: 12px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .product-location {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .product-seller {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .seller-avatar {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .seller-name {
+            font-size: 12px;
+            color: #666;
+            flex: 1;
+        }
+
+        .seller-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: #e0f7fa;
+            color: #00b894;
+            border-radius: 8px;
+        }
+
+        .want-btn {
+            padding: 6px 12px;
+            background: #ffe0e6;
+            color: #ff6b6b;
+            border: none;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .want-btn.active {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #999;
+            font-size: 11px;
+        }
+
+        .nav-item.active {
+            color: #00b894;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-publish {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            margin-top: -20px;
+            box-shadow: 0 4px 15px rgba(253, 203, 110, 0.4);
+        }
+
+        /* 弹窗通用样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 414px;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            animation: slideUp 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* 商品详情 */
+        .detail-image {
+            width: 100%;
+            height: 300px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .detail-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .detail-price {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-current {
+            font-size: 32px;
+            font-weight: 700;
+            color: #e17055;
+        }
+
+        .detail-original {
+            font-size: 16px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .detail-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .detail-tag {
+            padding: 5px 12px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .detail-desc {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .desc-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .desc-content {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* 卖家信息 */
+        .seller-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .seller-avatar-large {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .seller-info {
+            flex: 1;
+        }
+
+        .seller-name-large {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .seller-meta {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .seller-rating {
+            color: #ffa502;
+        }
+
+        .follow-btn {
+            padding: 8px 16px;
+            background: #00b894;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .follow-btn.active {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        /* 操作按钮 */
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-want {
+            flex: 1;
+            padding: 14px;
+            background: #ffe0e6;
+            color: #ff6b6b;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-want.active {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-chat {
+            flex: 2;
+            padding: 14px;
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 发布弹窗 */
+        .publish-form {
+            padding: 10px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: none;
+        }
+
+        .price-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .price-symbol {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .image-upload {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .upload-box {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .upload-box span {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .uploaded-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            position: relative;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .category-select {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .category-option {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .category-option.selected {
+            background: #e0f7fa;
+            border-color: #00b894;
+            color: #00b894;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+        }
+
+        .toast.active {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <span class="back-btn" onclick="goBack()">←</span>
+                <span class="header-title">📦 二手闲置</span>
+                <div class="header-actions">
+                    <span onclick="showToast('消息')">💬</span>
+                    <span onclick="showToast('我的')">👤</span>
+                </div>
+            </div>
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="搜索闲置物品">
+            </div>
+        </div>
+
+        <!-- 发布入口 -->
+        <div class="publish-banner">
+            <div class="publish-content">
+                <div class="publish-title">🏠 家里闲置？</div>
+                <div class="publish-desc">一键发布，快速回血，让闲置流动起来</div>
+            </div>
+            <button class="publish-btn" onclick="showPublishModal()">+ 发布</button>
+        </div>
+
+        <!-- 分类 -->
+        <div class="category-section">
+            <div class="category-grid">
+                <div class="category-item" onclick="filterCategory('全部')">
+                    <div class="category-icon">📦</div>
+                    <span class="category-name">全部</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('宠物用品')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #ff6b9d, #c44569);">🛏️</div>
+                    <span class="category-name">宠物用品</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('宠物食品')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">🍖</div>
+                    <span class="category-name">宠物食品</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('玩具')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #f9ca24, #f0932b);">🧸</div>
+                    <span class="category-name">玩具</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('服饰')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe);">👕</div>
+                    <span class="category-name">服饰</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('笼具')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #00b894, #55efc4);">🏠</div>
+                    <span class="category-name">笼具</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('牵引')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #e17055, #fab1a0);">🦮</div>
+                    <span class="category-name">牵引</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('洗护')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #74b9ff, #0984e3);">🛁</div>
+                    <span class="category-name">洗护</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('医疗')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #a29bfe, #6c5ce7);">💊</div>
+                    <span class="category-name">医疗</span>
+                </div>
+                <div class="category-item" onclick="filterCategory('书籍')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #fd79a8, #e84393);">📚</div>
+                    <span class="category-name">书籍</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 筛选 -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-chip active">综合排序</div>
+                <div class="filter-chip">最新发布</div>
+                <div class="filter-chip">价格最低</div>
+                <div class="filter-chip">距离最近</div>
+                <div class="filter-chip">🌟 信用优先</div>
+            </div>
+            <div class="price-filter">
+                <span style="font-size: 13px; color: #666;">价格：</span>
+                <input type="text" class="price-input" placeholder="最低价">
+                <span class="price-line">-</span>
+                <input type="text" class="price-input" placeholder="最高价">
+                <button class="price-btn" onclick="showToast('价格筛选已应用')">确定</button>
+            </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <div class="product-section">
+            <div class="section-header">
+                <div class="section-title">🔥 最新发布</div>
+                <div class="section-more">查看全部 ></div>
+            </div>
+            <div class="product-grid">
+                <!-- 商品1 -->
+                <div class="product-card" onclick="showDetail('宠物自动喂食器', 89, 299, '🥣')">
+                    <div class="product-image" style="background: linear-gradient(135deg, #ffecd2, #fcb69f);">
+                        🥣
+                        <span class="product-badge new">全新</span>
+                        <span class="product-favorite" onclick="event.stopPropagation(); toggleFavorite(this)">🤍</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">宠物自动喂食器 智能定时 3L大容量</div>
+                        <div class="product-price-row">
+                            <div class="product-price">
+                                <span class="current-price">¥89</span>
+                                <span class="original-price">¥299</span>
+                            </div>
+                        </div>
+                        <div class="product-location">📍 北京朝阳区 · 2.3km</div>
+                        <div class="product-seller">
+                            <div class="seller-avatar">👩</div>
+                            <span class="seller-name">小李闲置</span>
+                            <span class="seller-tag">信用极好</span>
+                            <button class="want-btn" onclick="event.stopPropagation(); toggleWant(this)">
+                                <span>❤️</span>
+                                <span class="want-count">3</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品2 -->
+                <div class="product-card" onclick="showDetail('猫爬架', 150, 399, '🏰')">
+                    <div class="product-image" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
+                        🏰
+                        <span class="product-badge">9成新</span>
+                        <span class="product-favorite" onclick="event.stopPropagation(); toggleFavorite(this)">🤍</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">猫爬架 四层豪华版 剑麻柱</div>
+                        <div class="product-price-row">
+                            <div class="product-price">
+                                <span class="current-price">¥150</span>
+                                <span class="original-price">¥399</span>
+                            </div>
+                        </div>
+                        <div class="product-location">📍 上海浦东新区 · 5.1km</div>
+                        <div class="product-seller">
+                            <div class="seller-avatar">👨</div>
+                            <span class="seller-name">猫奴小王</span>
+                            <span class="seller-tag">信用优秀</span>
+                            <button class="want-btn" onclick="event.stopPropagation(); toggleWant(this)">
+                                <span>❤️</span>
+                                <span class="want-count">8</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品3 -->
+                <div class="product-card" onclick="showDetail('进口狗粮', 45, 128, '🐕')">
+                    <div class="product-image" style="background: linear-gradient(135deg, #ffdde1, #ee9ca7);">
+                        🐕
+                        <span class="product-badge urgent">急出</span>
+                        <span class="product-favorite" onclick="event.stopPropagation(); toggleFavorite(this)">🤍</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">渴望鸡肉狗粮 2kg 剩一半</div>
+                        <div class="product-price-row">
+                            <div class="product-price">
+                                <span class="current-price">¥45</span>
+                                <span class="original-price">¥128</span>
+                            </div>
+                        </div>
+                        <div class="product-location">📍 广州天河区 · 1.2km</div>
+                        <div class="product-seller">
+                            <div class="seller-avatar">👩‍🦰</div>
+                            <span class="seller-name">阿珍</span>
+                            <span class="seller-tag">信用极好</span>
+                            <button class="want-btn" onclick="event.stopPropagation(); toggleWant(this)">
+                                <span>❤️</span>
+                                <span class="want-count">12</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品4 -->
+                <div class="product-card" onclick="showDetail('宠物航空箱', 60, 158, '✈️')">
+                    <div class="product-image" style="background: linear-gradient(135deg, #d299c2, #fef9d7);">
+                        ✈️
+                        <span class="product-badge">95新</span>
+                        <span class="product-favorite" onclick="event.stopPropagation(); toggleFavorite(this)">🤍</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">宠物航空箱 M号 适合15斤内</div>
+                        <div class="product-price-row">
+                            <div class="product-price">
+                                <span class="current-price">¥60</span>
+                                <span class="original-price">¥158</span>
+                            </div>
+                        </div>
+                        <div class="product-location">📍 深圳南山区 · 3.8km</div>
+                        <div class="product-seller">
+                            <div class="seller-avatar">🧑</div>
+                            <span class="seller-name">旅行达人</span>
+                            <span class="seller-tag">信用优秀</span>
+                            <button class="want-btn" onclick="event.stopPropagation(); toggleWant(this)">
+                                <span>❤️</span>
+                                <span class="want-count">5</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品5 -->
+                <div class="product-card" onclick="showDetail('猫咪玩具套装', 25, 68, '🧸')">
+                    <div class="product-image" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);">
+                        🧸
+                        <span class="product-badge new">全新</span>
+                        <span class="product-favorite" onclick="event.stopPropagation(); toggleFavorite(this)">🤍</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">猫咪玩具套装 10件套 送猫薄荷</div>
+                        <div class="product-price-row">
+                            <div class="product-price">
+                                <span class="current-price">¥25</span>
+                                <span class="original-price">¥68</span>
+                            </div>
+                        </div>
+                        <div class="product-location">📍 杭州西湖区 · 4.5km</div>
+                        <div class="product-seller">
+                            <div class="seller-avatar">👧</div>
+                            <span class="seller-name">萌宠小店</span>
+                            <span class="seller-tag">商家</span>
+                            <button class="want-btn" onclick="event.stopPropagation(); toggleWant(this)">
+                                <span>❤️</span>
+                                <span class="want-count">23</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品6 -->
+                <div class="product-card" onclick="showDetail('宠物智能饮水机', 120, 299, '💧')">
+                    <div class="product-image" style="background: linear-gradient(135deg, #84fab0, #8fd3f4);">
+                        💧
+                        <span class="product-badge">9成新</span>
+                        <span class="product-favorite" onclick="event.stopPropagation(); toggleFavorite(this)">🤍</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">小佩智能饮水机 滤芯刚换</div>
+                        <div class="product-price-row">
+                            <div class="product-price">
+                                <span class="current-price">¥120</span>
+                                <span class="original-price">¥299</span>
+                            </div>
+                        </div>
+                        <div class="product-location">📍 成都锦江区 · 2.1km</div>
+                        <div class="product-seller">
+                            <div class="seller-avatar">👦</div>
+                            <span class="seller-name">科技猫奴</span>
+                            <span class="seller-tag">信用极好</span>
+                            <button class="want-btn" onclick="event.stopPropagation(); toggleWant(this)">
+                                <span>❤️</span>
+                                <span class="want-count">7</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goBack()">
+                <span class="nav-icon">🏠</span>
+                <span>首页</span>
+            </div>
+            <div class="nav-item active">
+                <span class="nav-icon">📦</span>
+                <span>闲置</span>
+            </div>
+            <div class="nav-item" onclick="showPublishModal()">
+                <div class="nav-publish">+</div>
+            </div>
+            <div class="nav-item" onclick="showToast('消息')">
+                <span class="nav-icon">💬</span>
+                <span>消息</span>
+            </div>
+            <div class="nav-item" onclick="showToast('我的')">
+                <span class="nav-icon">👤</span>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 商品详情弹窗 -->
+    <div class="modal" id="detailModal" onclick="hideDetail(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">商品详情</div>
+                <div class="modal-close" onclick="hideDetail()">×</div>
+            </div>
+
+            <div class="detail-image" id="detailImage" style="background: linear-gradient(135deg, #ffecd2, #fcb69f);">
+                <span id="detailEmoji">🥣</span>
+            </div>
+
+            <div class="detail-info">
+                <h3 id="detailTitle">宠物自动喂食器 智能定时 3L大容量</h3>
+                <div class="detail-price">
+                    <span class="detail-current" id="detailPrice">¥89</span>
+                    <span class="detail-original" id="detailOriginal">¥299</span>
+                </div>
+                <div class="detail-tags">
+                    <span class="detail-tag">📦 9成新</span>
+                    <span class="detail-tag">🚚 自提/邮寄</span>
+                    <span class="detail-tag">💬 可议价</span>
+                </div>
+            </div>
+
+            <div class="detail-desc">
+                <div class="desc-title">商品描述</div>
+                <div class="desc-content" id="detailDesc">
+                    买了不到一个月，家里宠物不适应，所以出掉。<br><br>
+                    ✨ 功能完好，配件齐全<br>
+                    ✨ 支持APP远程控制<br>
+                    ✨ 3L大容量，可定时定量<br>
+                    ✨ 原装包装盒都在<br><br>
+                    📍 北京朝阳区，可自提也可邮寄（邮费自理）<br>
+                    💰 价格可小刀，非诚勿扰
+                </div>
+            </div>
+
+            <!-- 卖家信息 -->
+            <div class="seller-section">
+                <div class="seller-avatar-large">👩</div>
+                <div class="seller-info">
+                    <div class="seller-name-large">小李闲置</div>
+                    <div class="seller-meta">
+                        <span class="seller-rating">⭐⭐⭐⭐⭐</span>
+                        信用极好 · 发布12件 · 成交8件
+                    </div>
+                </div>
+                <button class="follow-btn" onclick="toggleFollow(this)">+ 关注</button>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="detail-actions">
+                <button class="btn-want" id="wantBtn" onclick="toggleWantDetail(this)">
+                    <span>❤️</span>
+                    <span>我想要</span>
+                </button>
+                <button class="btn-chat" onclick="startChat()">💬 私聊卖家</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发布弹窗 -->
+    <div class="modal" id="publishModal" onclick="hidePublish(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">📦 发布闲置</div>
+                <div class="modal-close" onclick="hidePublish()">×</div>
+            </div>
+
+            <form class="publish-form" onsubmit="submitPublish(event)">
+                <div class="form-group">
+                    <label class="form-label">上传图片</label>
+                    <div class="image-upload">
+                        <div class="uploaded-image">
+                            🥣
+                            <span class="remove-image">×</span>
+                        </div>
+                        <div class="uploaded-image">
+                            📷
+                            <span class="remove-image">×</span>
+                        </div>
+                        <div class="upload-box" onclick="showToast('添加图片')">
+                            <span>+</span>
+                            <span>添加</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">商品标题</label>
+                    <input type="text" class="form-input" placeholder="描述一下你的闲置物品" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">商品描述</label>
+                    <textarea class="form-textarea" placeholder="详细描述物品的新旧程度、功能状况、入手渠道等信息，让买家更了解你的商品"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">选择分类</label>
+                    <div class="category-select">
+                        <div class="category-option selected" onclick="selectCategory(this)">宠物用品</div>
+                        <div class="category-option" onclick="selectCategory(this)">宠物食品</div>
+                        <div class="category-option" onclick="selectCategory(this)">玩具</div>
+                        <div class="category-option" onclick="selectCategory(this)">服饰</div>
+                        <div class="category-option" onclick="selectCategory(this)">笼具</div>
+                        <div class="category-option" onclick="selectCategory(this)">其他</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">价格</label>
+                    <div class="price-input-group">
+                        <span class="price-symbol">¥</span>
+                        <input type="number" class="form-input" placeholder="售价" style="flex: 1;" required>
+                        <input type="number" class="form-input" placeholder="原价（选填）" style="flex: 1;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">所在地</label>
+                    <input type="text" class="form-input" placeholder="选择你的位置">
+                </div>
+
+                <button type="submit" class="btn-submit">发布闲置</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function goBack() {
+            window.location.href = '宠物之家小程序演示.html';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2000);
+        }
+
+        // 分类筛选
+        function filterCategory(category) {
+            showToast('已筛选：' + category);
+        }
+
+        // 商品详情
+        function showDetail(title, price, original, emoji) {
+            document.getElementById('detailTitle').textContent = title;
+            document.getElementById('detailPrice').textContent = '¥' + price;
+            document.getElementById('detailOriginal').textContent = '¥' + original;
+            document.getElementById('detailEmoji').textContent = emoji;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function hideDetail(event) {
+            if (!event || event.target.id === 'detailModal') {
+                document.getElementById('detailModal').classList.remove('active');
+            }
+        }
+
+        // 收藏
+        function toggleFavorite(element) {
+            element.textContent = element.textContent === '🤍' ? '❤️' : '🤍';
+            showToast(element.textContent === '❤️' ? '已收藏' : '取消收藏');
+        }
+
+        // 想要
+        function toggleWant(element) {
+            element.classList.toggle('active');
+            const countSpan = element.querySelector('.want-count');
+            let count = parseInt(countSpan.textContent);
+            if (element.classList.contains('active')) {
+                count++;
+                showToast('已标记为想要');
+            } else {
+                count--;
+            }
+            countSpan.textContent = count;
+        }
+
+        function toggleWantDetail(element) {
+            element.classList.toggle('active');
+            if (element.classList.contains('active')) {
+                showToast('已标记为想要，卖家会收到通知');
+            }
+        }
+
+        // 关注
+        function toggleFollow(element) {
+            element.classList.toggle('active');
+            if (element.classList.contains('active')) {
+                element.textContent = '已关注';
+                showToast('已关注该卖家');
+            } else {
+                element.textContent = '+ 关注';
+            }
+        }
+
+        // 私聊
+        function startChat() {
+            showToast('正在打开聊天窗口...');
+        }
+
+        // 发布弹窗
+        function showPublishModal() {
+            document.getElementById('publishModal').classList.add('active');
+        }
+
+        function hidePublish(event) {
+            if (!event || event.target.id === 'publishModal') {
+                document.getElementById('publishModal').classList.remove('active');
+            }
+        }
+
+        // 分类选择
+        function selectCategory(element) {
+            element.parentElement.querySelectorAll('.category-option').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // 提交发布
+        function submitPublish(event) {
+            event.preventDefault();
+            showToast('发布成功！正在审核中...');
+            setTimeout(() => {
+                hidePublish();
+            }, 1500);
+        }
+
+        // 筛选功能
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                showToast('已排序：' + this.textContent);
+            });
+        });
+    </script>
+</body>
+</html>

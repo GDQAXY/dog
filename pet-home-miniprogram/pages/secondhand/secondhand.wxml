@@ -1,0 +1,36 @@
+<!-- 二手闲置页面 -->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-top">
+      <text class="header-title">二手闲置</text>
+      <view class="publish-btn" bindtap="publishItem">
+        <text>➕</text>
+        <text>发布闲置</text>
+      </view>
+    </view>
+    <view class="filter-tabs">
+      <view class="filter-tab {{currentFilter === 0 ? 'active' : ''}}" bindtap="switchFilter" data-index="0">全部</view>
+      <view class="filter-tab {{currentFilter === 1 ? 'active' : ''}}" bindtap="switchFilter" data-index="1">用品转让</view>
+      <view class="filter-tab {{currentFilter === 2 ? 'active' : ''}}" bindtap="switchFilter" data-index="2">食品转让</view>
+      <view class="filter-tab {{currentFilter === 3 ? 'active' : ''}}" bindtap="switchFilter" data-index="3">求购</view>
+    </view>
+  </view>
+
+  <!-- 闲置列表 -->
+  <view class="item-list">
+    <view class="item-card" wx:for="{{items}}" wx:key="id" bindtap="onItemTap" data-item="{{item}}">
+      <view class="item-avatar" style="background: {{item.bg}}">{{item.icon}}</view>
+      <view class="item-info">
+        <view class="item-name-row">
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-price" style="color: {{item.type === '求购' ? '#667eea' : '#ff4757'}}">{{item.price}}</text>
+        </view>
+        <text class="item-location">📍 {{item.location}} · {{item.type}}</text>
+        <view class="item-tags">
+          <text class="tag" wx:for="{{item.tags}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>我的宠物</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 16px 30px;
+            color: white;
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-action {
+            font-size: 14px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 16px;
+            cursor: pointer;
+        }
+
+        /* 宠物卡片 */
+        .pet-card {
+            background: white;
+            margin: -20px 16px 16px;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .pet-header {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .pet-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .pet-basic-info {
+            flex: 1;
+        }
+
+        .pet-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .pet-breed {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .pet-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pet-tag {
+            padding: 4px 12px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .pet-tag.important {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        /* 健康状态 */
+        .health-status {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .health-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .health-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .health-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .health-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .health-value.good {
+            color: #4caf50;
+        }
+
+        .health-value.warning {
+            color: #ff9800;
+        }
+
+        /* 信息详情 */
+        .info-section {
+            border-top: 1px solid #f5f5f5;
+            padding-top: 20px;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        /* 功能按钮 */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: #f8f9fa;
+        }
+
+        .action-name {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 提醒事项 */
+        .reminder-section {
+            background: white;
+            margin: 0 16px 16px;
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .section-more {
+            font-size: 13px;
+            color: #667eea;
+        }
+
+        .reminder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .reminder-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .reminder-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+
+        .reminder-icon.vaccine {
+            background: #e8f5e9;
+        }
+
+        .reminder-icon.deworm {
+            background: #fff3e0;
+        }
+
+        .reminder-icon.medical {
+            background: #ffebee;
+        }
+
+        .reminder-content {
+            flex: 1;
+        }
+
+        .reminder-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+
+        .reminder-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .reminder-status {
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .reminder-status.urgent {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .reminder-status.normal {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        /* 健康档案 */
+        .health-record {
+            background: white;
+            margin: 0 16px 16px;
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .record-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .record-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-date {
+            width: 60px;
+            text-align: center;
+            margin-right: 16px;
+        }
+
+        .record-day {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .record-month {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .record-content {
+            flex: 1;
+        }
+
+        .record-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .record-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .record-tag {
+            padding: 2px 8px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* 添加宠物按钮 */
+        .add-pet-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .pet-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .pet-selector::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pet-selector-item {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .pet-selector-item.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .pet-selector-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .pet-selector-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <div class="back-btn" onclick="history.back()">←</div>
+                <div class="header-title">我的宠物</div>
+                <div class="header-action">编辑资料</div>
+            </div>
+
+            <!-- 宠物选择器 -->
+            <div class="pet-selector">
+                <div class="pet-selector-item active">
+                    <div class="pet-selector-avatar">🐶</div>
+                    <div class="pet-selector-name">豆豆</div>
+                </div>
+                <div class="pet-selector-item">
+                    <div class="pet-selector-avatar">🐱</div>
+                    <div class="pet-selector-name">咪咪</div>
+                </div>
+                <div class="pet-selector-item">
+                    <div class="pet-selector-avatar">+</div>
+                    <div class="pet-selector-name">添加</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 宠物卡片 -->
+        <div class="pet-card">
+            <div class="pet-header">
+                <div class="pet-avatar">🐶</div>
+                <div class="pet-basic-info">
+                    <div class="pet-name">豆豆</div>
+                    <div class="pet-breed">金毛寻回犬 · 3岁2个月</div>
+                    <div class="pet-tags">
+                        <span class="pet-tag important">已绝育</span>
+                        <span class="pet-tag">雄性</span>
+                        <span class="pet-tag">30kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 健康状态 -->
+            <div class="health-status">
+                <div class="health-item">
+                    <div class="health-icon">💉</div>
+                    <div class="health-label">疫苗状态</div>
+                    <div class="health-value good">已接种</div>
+                </div>
+                <div class="health-item">
+                    <div class="health-icon">🐛</div>
+                    <div class="health-label">驱虫情况</div>
+                    <div class="health-value good">已驱虫</div>
+                </div>
+                <div class="health-item">
+                    <div class="health-icon">🏥</div>
+                    <div class="health-label">健康状况</div>
+                    <div class="health-value good">健康</div>
+                </div>
+            </div>
+
+            <!-- 信息详情 -->
+            <div class="info-section">
+                <div class="info-title">基本信息</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">生日</div>
+                        <div class="info-value">2022年1月15日</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">到家日期</div>
+                        <div class="info-value">2022年3月20日</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">芯片编号</div>
+                        <div class="info-value">900123456789012</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">血型</div>
+                        <div class="info-value">DEA 1.1+</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">性格特点</div>
+                        <div class="info-value">活泼、友好、贪吃</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">饮食习惯</div>
+                        <div class="info-value">不挑食、爱吃零食</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快捷功能 -->
+            <div class="action-buttons">
+                <div class="action-btn" onclick="alert('健康档案')">
+                    <div class="action-icon" style="background: #e8f5e9;">📋</div>
+                    <div class="action-name">健康档案</div>
+                </div>
+                <div class="action-btn" onclick="alert('疫苗记录')">
+                    <div class="action-icon" style="background: #e3f2fd;">💉</div>
+                    <div class="action-name">疫苗记录</div>
+                </div>
+                <div class="action-btn" onclick="alert('驱虫记录')">
+                    <div class="action-icon" style="background: #fff3e0;">🐛</div>
+                    <div class="action-name">驱虫记录</div>
+                </div>
+                <div class="action-btn" onclick="alert('就医记录')">
+                    <div class="action-icon" style="background: #ffebee;">🏥</div>
+                    <div class="action-name">就医记录</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提醒事项 -->
+        <div class="reminder-section">
+            <div class="section-header">
+                <div class="section-title">⏰ 提醒事项</div>
+                <div class="section-more">管理提醒</div>
+            </div>
+            <div class="reminder-list">
+                <div class="reminder-item">
+                    <div class="reminder-icon vaccine">💉</div>
+                    <div class="reminder-content">
+                        <div class="reminder-title">狂犬疫苗加强针</div>
+                        <div class="reminder-time">还有15天到期</div>
+                    </div>
+                    <div class="reminder-status urgent">待接种</div>
+                </div>
+                <div class="reminder-item">
+                    <div class="reminder-icon deworm">🐛</div>
+                    <div class="reminder-content">
+                        <div class="reminder-title">体内驱虫</div>
+                        <div class="reminder-time">预计2026年4月15日</div>
+                    </div>
+                    <div class="reminder-status normal">已计划</div>
+                </div>
+                <div class="reminder-item">
+                    <div class="reminder-icon medical">🏥</div>
+                    <div class="reminder-content">
+                        <div class="reminder-title">年度体检</div>
+                        <div class="reminder-time">建议6个月内进行</div>
+                    </div>
+                    <div class="reminder-status normal">待安排</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 健康档案 -->
+        <div class="health-record">
+            <div class="section-header">
+                <div class="section-title">📋 最近动态</div>
+                <div class="section-more">查看全部</div>
+            </div>
+            <div class="record-list">
+                <div class="record-item">
+                    <div class="record-date">
+                        <div class="record-day">15</div>
+                        <div class="record-month">3月</div>
+                    </div>
+                    <div class="record-content">
+                        <div class="record-title">体外驱虫完成</div>
+                        <div class="record-desc">使用福来恩滴剂，体重30kg，用量3支</div>
+                    </div>
+                    <div class="record-tag">驱虫</div>
+                </div>
+                <div class="record-item">
+                    <div class="record-date">
+                        <div class="record-day">28</div>
+                        <div class="record-month">2月</div>
+                    </div>
+                    <div class="record-content">
+                        <div class="record-title">常规体检</div>
+                        <div class="record-desc">血常规正常，体重30.5kg，医生建议控制饮食</div>
+                    </div>
+                    <div class="record-tag">体检</div>
+                </div>
+                <div class="record-item">
+                    <div class="record-date">
+                        <div class="record-day">10</div>
+                        <div class="record-month">1月</div>
+                    </div>
+                    <div class="record-content">
+                        <div class="record-title">八联疫苗接种</div>
+                        <div class="record-desc">卫佳捌，接种反应正常，无不良反应</div>
+                    </div>
+                    <div class="record-tag">疫苗</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加宠物按钮 -->
+        <div class="add-pet-btn" onclick="alert('添加新宠物')">+</div>
+    </div>
+
+    <script>
+        // 宠物切换
+        document.querySelectorAll('.pet-selector-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.pet-selector-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

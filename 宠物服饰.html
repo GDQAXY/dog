@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AI宠物服饰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+            padding: 15px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-actions span {
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        /* 搜索栏 */
+        .search-box {
+            background: rgba(255,255,255,0.9);
+            border-radius: 25px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            flex: 1;
+            outline: none;
+            font-size: 14px;
+        }
+
+        /* AI试装入口 */
+        .ai-try-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 15px;
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-try-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .ai-try-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-try-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-try-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .ai-try-features {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .ai-try-feature {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ai-try-btn {
+            background: white;
+            color: #667eea;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* 分类筛选 */
+        .category-section {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .category-row {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 10px;
+        }
+
+        .category-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-chip {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .category-chip.active {
+            background: #fce4ec;
+            border-color: #ff6b9d;
+            color: #c44569;
+            font-weight: 500;
+        }
+
+        /* 商品网格 */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0 15px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .product-image {
+            height: 160px;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .product-image.pink {
+            background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+        }
+
+        .product-image.blue {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+
+        .product-image.green {
+            background: linear-gradient(135deg, #d299c2, #fef9d7);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #ff4757;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .product-try-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(102, 126, 234, 0.95);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .product-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .product-tags {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .product-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            color: #666;
+        }
+
+        .product-tag.ai {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .product-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .current-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff4757;
+        }
+
+        .original-price {
+            font-size: 12px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .add-cart-btn {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #999;
+            font-size: 11px;
+        }
+
+        .nav-item.active {
+            color: #ff6b9d;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        /* 弹窗通用样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 414px;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            animation: slideUp 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* AI试装弹窗 */
+        .ai-try-section {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .pet-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .pet-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .pet-option.selected {
+            border-color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .try-preview-area {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .try-preview-area.has-result {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+        }
+
+        .preview-pet {
+            font-size: 120px;
+            z-index: 1;
+        }
+
+        .preview-clothes {
+            position: absolute;
+            font-size: 80px;
+            z-index: 2;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -30%);
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: #666;
+        }
+
+        .preview-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .clothes-selector {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+
+        .clothes-item {
+            min-width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .clothes-item.selected {
+            border-color: #667eea;
+            background: #f3e5f5;
+        }
+
+        .ai-generating {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .ai-generating.active {
+            display: flex;
+        }
+
+        .ai-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 14px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* 商品详情弹窗 */
+        .product-detail-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .detail-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ff4757;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .detail-ai-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .product-detail-info {
+            margin-bottom: 20px;
+        }
+
+        .detail-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .detail-price {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-current-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff4757;
+        }
+
+        .detail-original-price {
+            font-size: 16px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .detail-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        /* 规格选择 */
+        .spec-section {
+            margin-bottom: 20px;
+        }
+
+        .spec-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .spec-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .spec-option {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .spec-option.selected {
+            background: #fce4ec;
+            border-color: #ff6b9d;
+            color: #c44569;
+        }
+
+        /* 数量选择 */
+        .quantity-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .quantity-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-value {
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        /* 底部操作栏 */
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-cart {
+            flex: 1;
+            padding: 14px;
+            background: #f5f5f5;
+            color: #333;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-buy {
+            flex: 2;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+        }
+
+        .toast.active {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+
+        /* 购物车角标 */
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <span class="back-btn" onclick="goBack()">←</span>
+                <span class="header-title">👕 AI宠物服饰</span>
+                <div class="header-actions">
+                    <span onclick="showToast('搜索')">🔍</span>
+                    <span onclick="showCart()">🛒</span>
+                </div>
+            </div>
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="搜索宠物衣服、配饰">
+            </div>
+        </div>
+
+        <!-- AI试装入口 -->
+        <div class="ai-try-banner">
+            <div class="ai-try-content">
+                <div class="ai-try-title">🤖 AI虚拟试装</div>
+                <div class="ai-try-subtitle">上传宠物照片，AI智能匹配最适合的穿搭</div>
+                <div class="ai-try-features">
+                    <div class="ai-try-feature">✨ 智能推荐</div>
+                    <div class="ai-try-feature">🎨 实时预览</div>
+                    <div class="ai-try-feature">💯 精准合身</div>
+                </div>
+                <button class="ai-try-btn" onclick="showAITryModal()">立即试装</button>
+            </div>
+        </div>
+
+        <!-- 分类筛选 -->
+        <div class="category-section">
+            <div class="category-row">
+                <div class="category-chip active">全部</div>
+                <div class="category-chip">🐶 狗狗服饰</div>
+                <div class="category-chip">🐱 猫咪服饰</div>
+                <div class="category-chip">🎀 配饰</div>
+                <div class="category-chip">👟 鞋子</div>
+            </div>
+            <div class="category-row">
+                <div class="category-chip">🔥 热销</div>
+                <div class="category-chip">🆕 新品</div>
+                <div class="category-chip">💰 特惠</div>
+                <div class="category-chip">❄️ 冬季</div>
+                <div class="category-chip">☀️ 夏季</div>
+            </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <div class="product-grid">
+            <!-- 商品1 -->
+            <div class="product-card" onclick="showProductDetail('可爱恐龙卫衣', 68, 128, '👕')">
+                <div class="product-image pink">
+                    👕
+                    <span class="product-badge">热销</span>
+                    <div class="product-try-btn" onclick="event.stopPropagation(); quickTry('👕')">🤖 试装</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-name">可爱恐龙卫衣</div>
+                    <div class="product-tags">
+                        <span class="product-tag ai">🤖 支持AI试装</span>
+                        <span class="product-tag">🐶 🐱</span>
+                    </div>
+                    <div class="product-price-row">
+                        <div class="product-price">
+                            <span class="current-price">¥68</span>
+                            <span class="original-price">¥128</span>
+                        </div>
+                        <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart()">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商品2 -->
+            <div class="product-card" onclick="showProductDetail('公主蕾丝裙', 88, 168, '👗')">
+                <div class="product-image" style="background: linear-gradient(135deg, #ffdde1, #ee9ca7);">
+                    👗
+                    <span class="product-badge" style="background: #2ed573;">新品</span>
+                    <div class="product-try-btn" onclick="event.stopPropagation(); quickTry('👗')">🤖 试装</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-name">公主蕾丝裙</div>
+                    <div class="product-tags">
+                        <span class="product-tag ai">🤖 支持AI试装</span>
+                        <span class="product-tag">🐱 猫咪</span>
+                    </div>
+                    <div class="product-price-row">
+                        <div class="product-price">
+                            <span class="current-price">¥88</span>
+                            <span class="original-price">¥168</span>
+                        </div>
+                        <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart()">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商品3 -->
+            <div class="product-card" onclick="showProductDetail('保暖羽绒服', 128, 238, '🧥')">
+                <div class="product-image blue">
+                    🧥
+                    <div class="product-try-btn" onclick="event.stopPropagation(); quickTry('🧥')">🤖 试装</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-name">保暖羽绒服</div>
+                    <div class="product-tags">
+                        <span class="product-tag ai">🤖 支持AI试装</span>
+                        <span class="product-tag">❄️ 冬季</span>
+                    </div>
+                    <div class="product-price-row">
+                        <div class="product-price">
+                            <span class="current-price">¥128</span>
+                            <span class="original-price">¥238</span>
+                        </div>
+                        <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart()">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商品4 -->
+            <div class="product-card" onclick="showProductDetail('帅气小西装', 98, 188, '🤵')">
+                <div class="product-image green">
+                    🤵
+                    <span class="product-badge" style="background: #ffa502;">特惠</span>
+                    <div class="product-try-btn" onclick="event.stopPropagation(); quickTry('🤵')">🤖 试装</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-name">帅气小西装</div>
+                    <div class="product-tags">
+                        <span class="product-tag ai">🤖 支持AI试装</span>
+                        <span class="product-tag">🐶 狗狗</span>
+                    </div>
+                    <div class="product-price-row">
+                        <div class="product-price">
+                            <span class="current-price">¥98</span>
+                            <span class="original-price">¥188</span>
+                        </div>
+                        <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart()">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商品5 -->
+            <div class="product-card" onclick="showProductDetail('彩虹条纹T恤', 45, 88, '👚')">
+                <div class="product-image" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
+                    👚
+                    <div class="product-try-btn" onclick="event.stopPropagation(); quickTry('👚')">🤖 试装</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-name">彩虹条纹T恤</div>
+                    <div class="product-tags">
+                        <span class="product-tag ai">🤖 支持AI试装</span>
+                        <span class="product-tag">☀️ 夏季</span>
+                    </div>
+                    <div class="product-price-row">
+                        <div class="product-price">
+                            <span class="current-price">¥45</span>
+                            <span class="original-price">¥88</span>
+                        </div>
+                        <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart()">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商品6 -->
+            <div class="product-card" onclick="showProductDetail('蝴蝶结项圈', 28, 58, '🎀')">
+                <div class="product-image" style="background: linear-gradient(135deg, #d299c2, #fef9d7);">
+                    🎀
+                    <div class="product-try-btn" onclick="event.stopPropagation(); quickTry('🎀')">🤖 试装</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-name">蝴蝶结项圈</div>
+                    <div class="product-tags">
+                        <span class="product-tag ai">🤖 支持AI试装</span>
+                        <span class="product-tag">🎀 配饰</span>
+                    </div>
+                    <div class="product-price-row">
+                        <div class="product-price">
+                            <span class="current-price">¥28</span>
+                            <span class="original-price">¥58</span>
+                        </div>
+                        <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart()">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goBack()">
+                <span class="nav-icon">🏠</span>
+                <span>首页</span>
+            </div>
+            <div class="nav-item active">
+                <span class="nav-icon">👕</span>
+                <span>服饰</span>
+            </div>
+            <div class="nav-item" onclick="showAITryModal()">
+                <span class="nav-icon">🤖</span>
+                <span>AI试装</span>
+            </div>
+            <div class="nav-item" onclick="showCart()">
+                <span class="nav-icon">🛒</span>
+                <span id="cartText">购物车</span>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI试装弹窗 -->
+    <div class="modal" id="aiTryModal" onclick="hideAITryModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">🤖 AI虚拟试装</div>
+                <div class="modal-close" onclick="hideAITryModal()">×</div>
+            </div>
+
+            <div class="ai-try-section">
+                <!-- 选择宠物 -->
+                <div style="margin-bottom: 15px;">
+                    <div style="font-size: 14px; color: #666; margin-bottom: 10px;">选择您的宠物</div>
+                    <div class="pet-selector">
+                        <div class="pet-option selected" onclick="selectPet(this, '🐶')">🐶</div>
+                        <div class="pet-option" onclick="selectPet(this, '🐱')">🐱</div>
+                        <div class="pet-option" onclick="selectPet(this, '🐕')">🐕</div>
+                        <div class="pet-option" onclick="selectPet(this, '🐈')">🐈</div>
+                    </div>
+                </div>
+
+                <!-- 试装预览区 -->
+                <div class="try-preview-area" id="previewArea">
+                    <div class="preview-placeholder" id="previewPlaceholder">
+                        <div class="preview-icon">🐶</div>
+                        <div style="font-size: 14px;">选择服装开始试装</div>
+                    </div>
+                    <div class="preview-pet" id="previewPet" style="display: none;">🐶</div>
+                    <div class="preview-clothes" id="previewClothes" style="display: none;"></div>
+
+                    <!-- AI生成中 -->
+                    <div class="ai-generating" id="aiGenerating">
+                        <div class="ai-icon">🤖</div>
+                        <div>AI正在生成试装效果...</div>
+                    </div>
+                </div>
+
+                <!-- 选择服装 -->
+                <div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 10px;">选择服装款式</div>
+                    <div class="clothes-selector">
+                        <div class="clothes-item selected" onclick="selectClothes(this, '👕')">👕</div>
+                        <div class="clothes-item" onclick="selectClothes(this, '👗')">👗</div>
+                        <div class="clothes-item" onclick="selectClothes(this, '🧥')">🧥</div>
+                        <div class="clothes-item" onclick="selectClothes(this, '🤵')">🤵</div>
+                        <div class="clothes-item" onclick="selectClothes(this, '👚')">👚</div>
+                        <div class="clothes-item" onclick="selectClothes(this, '🎀')">🎀</div>
+                        <div class="clothes-item" onclick="selectClothes(this, '👘')">👘</div>
+                        <div class="clothes-item" onclick="selectClothes(this, '🥻')">🥻</div>
+                    </div>
+                </div>
+
+                <button class="btn-full" onclick="generateAIResult()">✨ 生成AI试装效果</button>
+                <button class="btn-secondary" onclick="hideAITryModal(); showProductDetail('可爱恐龙卫衣', 68, 128, '👕')">查看商品详情</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 商品详情弹窗 -->
+    <div class="modal" id="productDetailModal" onclick="hideProductDetail(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">商品详情</div>
+                <div class="modal-close" onclick="hideProductDetail()">×</div>
+            </div>
+
+            <div class="product-detail-image" id="detailImage">
+                <span id="detailEmoji">👕</span>
+                <span class="detail-badge">支持AI试装</span>
+                <div class="detail-ai-btn" onclick="hideProductDetail(); showAITryModal();">
+                    <span>🤖</span>
+                    <span>AI试装</span>
+                </div>
+            </div>
+
+            <div class="product-detail-info">
+                <div class="detail-name" id="detailName">可爱恐龙卫衣</div>
+                <div class="detail-price">
+                    <span class="detail-current-price" id="detailPrice">¥68</span>
+                    <span class="detail-original-price" id="detailOriginalPrice">¥128</span>
+                </div>
+                <div class="detail-desc">
+                    🌟 采用优质棉质面料，柔软舒适<br>
+                    🎨 可爱恐龙印花设计，萌趣十足<br>
+                    📏 精准尺码，多种体型适配<br>
+                    🤖 支持AI虚拟试装，预览效果
+                </div>
+            </div>
+
+            <!-- 规格选择 -->
+            <div class="spec-section">
+                <div class="spec-title">选择尺码</div>
+                <div class="spec-options">
+                    <div class="spec-option" onclick="selectSpec(this)">XS (1-3斤)</div>
+                    <div class="spec-option selected" onclick="selectSpec(this)">S (3-5斤)</div>
+                    <div class="spec-option" onclick="selectSpec(this)">M (5-8斤)</div>
+                    <div class="spec-option" onclick="selectSpec(this)">L (8-12斤)</div>
+                    <div class="spec-option" onclick="selectSpec(this)">XL (12-18斤)</div>
+                    <div class="spec-option" onclick="selectSpec(this)">XXL (18-25斤)</div>
+                </div>
+            </div>
+
+            <div class="spec-section">
+                <div class="spec-title">选择颜色</div>
+                <div class="spec-options">
+                    <div class="spec-option selected" onclick="selectSpec(this)">粉色</div>
+                    <div class="spec-option" onclick="selectSpec(this)">蓝色</div>
+                    <div class="spec-option" onclick="selectSpec(this)">黄色</div>
+                    <div class="spec-option" onclick="selectSpec(this)">绿色</div>
+                </div>
+            </div>
+
+            <!-- 数量 -->
+            <div class="quantity-section">
+                <span class="quantity-label">购买数量</span>
+                <div class="quantity-control">
+                    <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                    <span class="quantity-value" id="quantity">1</span>
+                    <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="detail-actions">
+                <button class="btn-cart" onclick="addToCart()">加入购物车</button>
+                <button class="btn-buy" onclick="buyNow()">立即购买</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let cartCount = 0;
+        let currentQuantity = 1;
+        let selectedPet = '🐶';
+        let selectedClothes = '👕';
+
+        function goBack() {
+            window.location.href = '宠物之家小程序演示.html';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2000);
+        }
+
+        // AI试装弹窗
+        function showAITryModal() {
+            document.getElementById('aiTryModal').classList.add('active');
+        }
+
+        function hideAITryModal(event) {
+            if (!event || event.target.id === 'aiTryModal') {
+                document.getElementById('aiTryModal').classList.remove('active');
+                // 重置预览
+                document.getElementById('previewArea').classList.remove('has-result');
+                document.getElementById('previewPlaceholder').style.display = 'block';
+                document.getElementById('previewPet').style.display = 'none';
+                document.getElementById('previewClothes').style.display = 'none';
+            }
+        }
+
+        // 选择宠物
+        function selectPet(element, pet) {
+            document.querySelectorAll('.pet-option').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedPet = pet;
+            document.getElementById('previewPet').textContent = pet;
+        }
+
+        // 选择服装
+        function selectClothes(element, clothes) {
+            document.querySelectorAll('.clothes-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedClothes = clothes;
+        }
+
+        // 快速试装
+        function quickTry(clothes) {
+            selectedClothes = clothes;
+            showAITryModal();
+            // 自动选中对应的服装
+            document.querySelectorAll('.clothes-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.textContent === clothes) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        // 生成AI试装效果
+        function generateAIResult() {
+            const generating = document.getElementById('aiGenerating');
+            const previewArea = document.getElementById('previewArea');
+            const placeholder = document.getElementById('previewPlaceholder');
+            const pet = document.getElementById('previewPet');
+            const clothes = document.getElementById('previewClothes');
+
+            generating.classList.add('active');
+
+            setTimeout(() => {
+                generating.classList.remove('active');
+                previewArea.classList.add('has-result');
+                placeholder.style.display = 'none';
+                pet.style.display = 'block';
+                pet.textContent = selectedPet;
+                clothes.style.display = 'block';
+                clothes.textContent = selectedClothes;
+
+                showToast('AI试装效果生成完成！');
+            }, 2000);
+        }
+
+        // 商品详情
+        function showProductDetail(name, price, originalPrice, emoji) {
+            document.getElementById('detailName').textContent = name;
+            document.getElementById('detailPrice').textContent = '¥' + price;
+            document.getElementById('detailOriginalPrice').textContent = '¥' + originalPrice;
+            document.getElementById('detailEmoji').textContent = emoji;
+            document.getElementById('productDetailModal').classList.add('active');
+            currentQuantity = 1;
+            document.getElementById('quantity').textContent = currentQuantity;
+        }
+
+        function hideProductDetail(event) {
+            if (!event || event.target.id === 'productDetailModal') {
+                document.getElementById('productDetailModal').classList.remove('active');
+            }
+        }
+
+        // 规格选择
+        function selectSpec(element) {
+            element.parentElement.querySelectorAll('.spec-option').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // 数量调整
+        function changeQuantity(delta) {
+            currentQuantity += delta;
+            if (currentQuantity < 1) currentQuantity = 1;
+            if (currentQuantity > 99) currentQuantity = 99;
+            document.getElementById('quantity').textContent = currentQuantity;
+        }
+
+        // 加入购物车
+        function addToCart() {
+            cartCount += currentQuantity;
+            document.getElementById('cartBadge').textContent = cartCount;
+            document.getElementById('cartBadge').style.display = 'block';
+            document.getElementById('cartText').textContent = '购物车(' + cartCount + ')';
+            showToast('已加入购物车');
+        }
+
+        // 立即购买
+        function buyNow() {
+            showToast('正在跳转支付...');
+        }
+
+        // 显示购物车
+        function showCart() {
+            if (cartCount === 0) {
+                showToast('购物车是空的');
+            } else {
+                showToast('购物车共有 ' + cartCount + ' 件商品');
+            }
+        }
+
+        // 分类筛选
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                showToast('已筛选：' + this.textContent);
+            });
+        });
+    </script>
+</body>
+</html>

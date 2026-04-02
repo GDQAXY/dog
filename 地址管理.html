@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>地址管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* 头部 */
+        .header {
+            background: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin-left: -8px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-action {
+            font-size: 14px;
+            color: #667eea;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        /* 地址列表 */
+        .address-list {
+            padding: 16px;
+        }
+
+        .address-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .address-card.default {
+            border: 2px solid #667eea;
+        }
+
+        .address-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .address-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .address-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .address-phone {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .default-tag {
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 11px;
+            border-radius: 8px;
+        }
+
+        .address-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .address-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .address-action-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radio.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .radio.active::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+        }
+
+        .set-default {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .address-action-right {
+            display: flex;
+            gap: 16px;
+        }
+
+        .action-text {
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 添加按钮 */
+        .add-address {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-align: center;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 16px;
+        }
+
+        .empty-text {
+            font-size: 15px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="back-btn" onclick="history.back()">←</div>
+            <div class="header-title">地址管理</div>
+            <div class="header-action">管理</div>
+        </div>
+
+        <!-- 地址列表 -->
+        <div class="address-list">
+            <!-- 默认地址 -->
+            <div class="address-card default">
+                <div class="address-header">
+                    <div class="address-user">
+                        <span class="address-name">张先生</span>
+                        <span class="address-phone">138****8888</span>
+                    </div>
+                    <span class="default-tag">默认</span>
+                </div>
+                <div class="address-content">
+                    北京市朝阳区xx街道xx小区xx号楼xx单元xxx室
+                </div>
+                <div class="address-actions">
+                    <div class="address-action-left">
+                        <div class="radio active"></div>
+                        <span class="set-default" style="color: #667eea; font-weight: 500;">默认地址</span>
+                    </div>
+                    <div class="address-action-right">
+                        <span class="action-text" onclick="alert('编辑地址')">✏️ 编辑</span>
+                        <span class="action-text" onclick="alert('删除地址')">🗑️ 删除</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 其他地址 -->
+            <div class="address-card">
+                <div class="address-header">
+                    <div class="address-user">
+                        <span class="address-name">李女士</span>
+                        <span class="address-phone">139****6666</span>
+                    </div>
+                </div>
+                <div class="address-content">
+                    上海市浦东新区xx路xx号xx大厦xx层
+                </div>
+                <div class="address-actions">
+                    <div class="address-action-left" onclick="this.querySelector('.radio').classList.toggle('active')">
+                        <div class="radio"></div>
+                        <span class="set-default">设为默认</span>
+                    </div>
+                    <div class="address-action-right">
+                        <span class="action-text" onclick="alert('编辑地址')">✏️ 编辑</span>
+                        <span class="action-text" onclick="alert('删除地址')">🗑️ 删除</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 公司地址 -->
+            <div class="address-card">
+                <div class="address-header">
+                    <div class="address-user">
+                        <span class="address-name">张先生</span>
+                        <span class="address-phone">138****8888</span>
+                    </div>
+                </div>
+                <div class="address-content">
+                    广州市天河区xx科技园xx栋xx室
+                </div>
+                <div class="address-actions">
+                    <div class="address-action-left" onclick="this.querySelector('.radio').classList.toggle('active')">
+                        <div class="radio"></div>
+                        <span class="set-default">设为默认</span>
+                    </div>
+                    <div class="address-action-right">
+                        <span class="action-text" onclick="alert('编辑地址')">✏️ 编辑</span>
+                        <span class="action-text" onclick="alert('删除地址')">🗑️ 删除</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加按钮 -->
+        <div class="add-address">
+            <div class="add-btn" onclick="alert('添加新地址')">+ 添加新地址</div>
+        </div>
+    </div>
+</body>
+</html>

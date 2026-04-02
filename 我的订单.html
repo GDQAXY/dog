@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>我的订单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* 头部 */
+        .header {
+            background: white;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin-left: -8px;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: 40px;
+        }
+
+        /* 搜索栏 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 20px;
+            padding: 10px 16px;
+            gap: 8px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        /* 状态标签 */
+        .status-tabs {
+            display: flex;
+            background: white;
+            padding: 0 16px;
+            border-bottom: 1px solid #f0f0f0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .status-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .status-tab {
+            flex-shrink: 0;
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #666;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .status-tab.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .status-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 16px;
+            right: 16px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            min-width: 16px;
+            height: 16px;
+            background: #ff4757;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        /* 订单列表 */
+        .order-list {
+            padding: 16px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-shop {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .order-status {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .order-status.waiting {
+            color: #ff9800;
+        }
+
+        .order-status.processing {
+            color: #2196f3;
+        }
+
+        .order-status.completed {
+            color: #4caf50;
+        }
+
+        .order-status.cancelled {
+            color: #999;
+        }
+
+        /* 订单商品 */
+        .order-goods {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .goods-img {
+            width: 80px;
+            height: 80px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .goods-info {
+            flex: 1;
+        }
+
+        .goods-name {
+            font-size: 14px;
+            color: #1a1a1a;
+            line-height: 1.4;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .goods-spec {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .goods-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .goods-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ff4757;
+        }
+
+        .goods-count {
+            font-size: 13px;
+            color: #999;
+        }
+
+        /* 订单底部 */
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .order-total {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .order-total span {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .order-btn {
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+
+        .order-btn.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .order-btn.secondary {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 15px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        .empty-btn {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <div class="back-btn" onclick="history.back()">←</div>
+                <div class="header-title">我的订单</div>
+            </div>
+            <div class="search-bar">
+                <span>🔍</span>
+                <input type="text" placeholder="搜索订单商品">
+            </div>
+        </div>
+
+        <!-- 状态标签 -->
+        <div class="status-tabs">
+            <div class="status-tab active">全部</div>
+            <div class="status-tab">
+                待付款
+                <span class="status-badge">2</span>
+            </div>
+            <div class="status-tab">
+                待服务
+                <span class="status-badge">1</span>
+            </div>
+            <div class="status-tab">进行中</div>
+            <div class="status-tab">
+                待评价
+                <span class="status-badge">3</span>
+            </div>
+            <div class="status-tab">退款/售后</div>
+        </div>
+
+        <!-- 订单列表 -->
+        <div class="order-list">
+            <!-- 订单1 - 待付款 -->
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-shop">
+                        <span>🏠</span>
+                        李阿姨的家庭寄养
+                    </div>
+                    <div class="order-status waiting">待付款</div>
+                </div>
+                <div class="order-goods">
+                    <div class="goods-img">🏠</div>
+                    <div class="goods-info">
+                        <div class="goods-name">宠物寄养服务（中小型犬）</div>
+                        <div class="goods-spec">2026.04.01 - 2026.04.05 · 共5天</div>
+                        <div class="goods-price-row">
+                            <div class="goods-price">¥45/天</div>
+                            <div class="goods-count">x5天</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-footer">
+                    <div class="order-total">合计: <span>¥225</span></div>
+                    <div class="order-actions">
+                        <button class="order-btn secondary" onclick="alert('取消订单')">取消</button>
+                        <button class="order-btn primary" onclick="alert('去付款')">去付款</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 订单2 - 待服务 -->
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-shop">
+                        <span>🏥</span>
+                        瑞鹏宠物医院
+                    </div>
+                    <div class="order-status waiting">待服务</div>
+                </div>
+                <div class="order-goods">
+                    <div class="goods-img">💉</div>
+                    <div class="goods-info">
+                        <div class="goods-name">宠物体检套餐（全面版）</div>
+                        <div class="goods-spec">预约时间: 2026-03-30 10:00</div>
+                        <div class="goods-price-row">
+                            <div class="goods-price">¥299</div>
+                            <div class="goods-count">x1</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-footer">
+                    <div class="order-total">合计: <span>¥299</span></div>
+                    <div class="order-actions">
+                        <button class="order-btn secondary" onclick="alert('联系商家')">联系商家</button>
+                        <button class="order-btn primary" onclick="alert('查看详情')">查看详情</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 订单3 - 进行中 -->
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-shop">
+                        <span>🚗</span>
+                        宠物运输服务
+                    </div>
+                    <div class="order-status processing">运输中</div>
+                </div>
+                <div class="order-goods">
+                    <div class="goods-img">🚗</div>
+                    <div class="goods-info">
+                        <div class="goods-name">北京 → 上海 宠物专车运输</div>
+                        <div class="goods-spec">运单号: PK20250328001</div>
+                        <div class="goods-price-row">
+                            <div class="goods-price">¥1,280</div>
+                            <div class="goods-count">x1</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-footer">
+                    <div class="order-total">合计: <span>¥1,280</span></div>
+                    <div class="order-actions">
+                        <button class="order-btn secondary" onclick="alert('查看物流')">查看物流</button>
+                        <button class="order-btn primary" onclick="alert('确认收货')">确认收货</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 订单4 - 待评价 -->
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-shop">
+                        <span>🏨</span>
+                        豪华宠物酒店
+                    </div>
+                    <div class="order-status completed">待评价</div>
+                </div>
+                <div class="order-goods">
+                    <div class="goods-img">🏨</div>
+                    <div class="goods-info">
+                        <div class="goods-name">宠物酒店VIP套房（3天）</div>
+                        <div class="goods-spec">已完成入住 · 2026-03-20 至 2026-03-23</div>
+                        <div class="goods-price-row">
+                            <div class="goods-price">¥199/天</div>
+                            <div class="goods-count">x3天</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-footer">
+                    <div class="order-total">合计: <span>¥597</span></div>
+                    <div class="order-actions">
+                        <button class="order-btn secondary" onclick="alert('再次预订')">再次预订</button>
+                        <button class="order-btn primary" onclick="alert('去评价')">去评价</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 订单5 - 已完成 -->
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-shop">
+                        <span>🍖</span>
+                        宠物零食店
+                    </div>
+                    <div class="order-status completed">已完成</div>
+                </div>
+                <div class="order-goods">
+                    <div class="goods-img">🥩</div>
+                    <div class="goods-info">
+                        <div class="goods-name">进口冻干狗粮 500g x 2袋</div>
+                        <div class="goods-spec">口味: 鸡肉味</div>
+                        <div class="goods-price-row">
+                            <div class="goods-price">¥59</div>
+                            <div class="goods-count">x2</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-footer">
+                    <div class="order-total">合计: <span>¥118</span></div>
+                    <div class="order-actions">
+                        <button class="order-btn secondary" onclick="alert('申请售后')">申请售后</button>
+                        <button class="order-btn secondary" onclick="alert('再次购买')">再次购买</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签切换
+        document.querySelectorAll('.status-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

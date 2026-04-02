@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>领券中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding-bottom: 20px;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            padding: 15px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .my-coupons {
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* 我的券包 */
+        .wallet-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            padding: 0 15px 30px;
+            color: white;
+        }
+
+        .wallet-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .wallet-item {
+            cursor: pointer;
+        }
+
+        .wallet-num {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .wallet-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* 券类型切换 */
+        .tab-section {
+            background: white;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            position: sticky;
+            top: 60px;
+            z-index: 99;
+        }
+
+        .tab-item {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .tab-item.active {
+            background: #ffe0e6;
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        /* 优惠券列表 */
+        .coupon-list {
+            padding: 15px;
+        }
+
+        .coupon-card {
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .coupon-left {
+            width: 100px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            position: relative;
+        }
+
+        .coupon-left.used {
+            background: #ccc;
+        }
+
+        .coupon-left.expired {
+            background: #999;
+        }
+
+        .coupon-amount {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .coupon-amount span {
+            font-size: 14px;
+        }
+
+        .coupon-type {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* 锯齿效果 */
+        .coupon-left::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: #f5f5f5;
+            border-radius: 50%;
+        }
+
+        .coupon-right {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .coupon-info {
+            flex: 1;
+        }
+
+        .coupon-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .coupon-desc {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .coupon-time {
+            font-size: 12px;
+            color: #ff6b6b;
+        }
+
+        .coupon-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .coupon-btn.used {
+            background: #ccc;
+        }
+
+        .coupon-btn.got {
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        /* 活动Banner */
+        .activity-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 15px 15px;
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .activity-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .activity-desc {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .activity-btn {
+            background: white;
+            color: #667eea;
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* 兑换码 */
+        .exchange-section {
+            background: white;
+            margin: 0 15px 15px;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .exchange-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .exchange-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .exchange-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .exchange-btn {
+            padding: 12px 25px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+        }
+
+        .toast.active {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <span class="back-btn" onclick="goBack()">←</span>
+                <span class="header-title">🎫 领券中心</span>
+                <span class="my-coupons" onclick="showToast('我的券包')">我的券 ></span>
+            </div>
+        </div>
+
+        <!-- 我的券包 -->
+        <div class="wallet-section">
+            <div class="wallet-card">
+                <div class="wallet-item" onclick="showToast('可用优惠券 5张')">
+                    <div class="wallet-num">5</div>
+                    <div class="wallet-label">可用券</div>
+                </div>
+                <div class="wallet-item" onclick="showToast('已使用 12张')">
+                    <div class="wallet-num">12</div>
+                    <div class="wallet-label">已使用</div>
+                </div>
+                <div class="wallet-item" onclick="showToast('已过期 3张')">
+                    <div class="wallet-num">3</div>
+                    <div class="wallet-label">已过期</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 券类型切换 -->
+        <div class="tab-section">
+            <div class="tab-item active" onclick="switchTab(this, 'all')">全部</div>
+            <div class="tab-item" onclick="switchTab(this, 'platform')">平台券</div>
+            <div class="tab-item" onclick="switchTab(this, 'shop')">店铺券</div>
+            <div class="tab-item" onclick="switchTab(this, 'category')">品类券</div>
+            <div class="tab-item" onclick="switchTab(this, 'shipping')">运费券</div>
+        </div>
+
+        <!-- 活动Banner -->
+        <div class="activity-banner">
+            <div class="activity-title">🎉 新人专享礼包</div>
+            <div class="activity-desc">注册即领188元优惠券大礼包</div>
+            <button class="activity-btn" onclick="claimNewUserPack()">立即领取</button>
+        </div>
+
+        <!-- 兑换码 -->
+        <div class="exchange-section">
+            <div class="exchange-title">🎁 兑换码</div>
+            <div class="exchange-input-group">
+                <input type="text" class="exchange-input" placeholder="输入兑换码">
+                <button class="exchange-btn" onclick="exchangeCode()">兑换</button>
+            </div>
+        </div>
+
+        <!-- 优惠券列表 -->
+        <div class="coupon-list">
+            <!-- 券1 -->
+            <div class="coupon-card">
+                <div class="coupon-left">
+                    <div class="coupon-amount"><span>¥</span>20</div>
+                    <div class="coupon-type">满100可用</div>
+                </div>
+                <div class="coupon-right">
+                    <div class="coupon-info">
+                        <div class="coupon-title">全品类通用券</div>
+                        <div class="coupon-desc">除特殊商品外全场通用</div>
+                        <div class="coupon-time">有效期至 2026-04-30</div>
+                    </div>
+                    <button class="coupon-btn" onclick="claimCoupon(this, '¥20通用券')">立即领</button>
+                </div>
+            </div>
+
+            <!-- 券2 -->
+            <div class="coupon-card">
+                <div class="coupon-left">
+                    <div class="coupon-amount"><span>¥</span>50</div>
+                    <div class="coupon-type">满200可用</div>
+                </div>
+                <div class="coupon-right">
+                    <div class="coupon-info">
+                        <div class="coupon-title">宠物用品专享券</div>
+                        <div class="coupon-desc">宠物用品、玩具、服饰可用</div>
+                        <div class="coupon-time">有效期至 2026-04-15</div>
+                    </div>
+                    <button class="coupon-btn" onclick="claimCoupon(this, '¥50用品券')">立即领</button>
+                </div>
+            </div>
+
+            <!-- 券3 -->
+            <div class="coupon-card">
+                <div class="coupon-left">
+                    <div class="coupon-amount"><span>¥</span>10</div>
+                    <div class="coupon-type">无门槛</div>
+                </div>
+                <div class="coupon-right">
+                    <div class="coupon-info">
+                        <div class="coupon-title">新客专享券</div>
+                        <div class="coupon-desc">仅限首次下单用户</div>
+                        <div class="coupon-time">有效期至 2026-03-31</div>
+                    </div>
+                    <button class="coupon-btn" onclick="claimCoupon(this, '¥10无门槛券')">立即领</button>
+                </div>
+            </div>
+
+            <!-- 券4 -->
+            <div class="coupon-card">
+                <div class="coupon-left">
+                    <div class="coupon-amount"><span>¥</span>5</div>
+                    <div class="coupon-type">无门槛</div>
+                </div>
+                <div class="coupon-right">
+                    <div class="coupon-info">
+                        <div class="coupon-title">运费抵扣券</div>
+                        <div class="coupon-desc">可用于抵扣运费</div>
+                        <div class="coupon-time">有效期至 2026-03-20</div>
+                    </div>
+                    <button class="coupon-btn got">已领取</button>
+                </div>
+            </div>
+
+            <!-- 券5 -->
+            <div class="coupon-card">
+                <div class="coupon-left">
+                    <div class="coupon-amount"><span>¥</span>100</div>
+                    <div class="coupon-type">满500可用</div>
+                </div>
+                <div class="coupon-right">
+                    <div class="coupon-info">
+                        <div class="coupon-title">宠物医疗专享券</div>
+                        <div class="coupon-desc">医疗服务、体检套餐可用</div>
+                        <div class="coupon-time">有效期至 2026-04-10</div>
+                    </div>
+                    <button class="coupon-btn" onclick="claimCoupon(this, '¥100医疗券')">立即领</button>
+                </div>
+            </div>
+
+            <!-- 券6 -->
+            <div class="coupon-card">
+                <div class="coupon-left">
+                    <div class="coupon-amount"><span>¥</span>30</div>
+                    <div class="coupon-type">满150可用</div>
+                </div>
+                <div class="coupon-right">
+                    <div class="coupon-info">
+                        <div class="coupon-title">宠物零食券</div>
+                        <div class="coupon-desc">零食、罐头、冻干可用</div>
+                        <div class="coupon-time">有效期至 2026-03-25</div>
+                    </div>
+                    <button class="coupon-btn" onclick="claimCoupon(this, '¥30零食券')">立即领</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function goBack() {
+            window.location.href = '宠物之家小程序演示.html';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2000);
+        }
+
+        // 切换标签
+        function switchTab(element, type) {
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+            showToast('已切换：' + element.textContent);
+        }
+
+        // 领取优惠券
+        function claimCoupon(button, name) {
+            button.textContent = '已领取';
+            button.classList.add('got');
+            showToast('成功领取 ' + name);
+        }
+
+        // 领取新人礼包
+        function claimNewUserPack() {
+            showToast('恭喜！188元礼包已到账');
+        }
+
+        // 兑换码
+        function exchangeCode() {
+            const input = document.querySelector('.exchange-input');
+            if (input.value.trim()) {
+                showToast('兑换成功！优惠券已到账');
+                input.value = '';
+            } else {
+                showToast('请输入兑换码');
+            }
+        }
+    </script>
+</body>
+</html>

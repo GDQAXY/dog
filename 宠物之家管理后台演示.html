@@ -1,0 +1,2915 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物之家 - 管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        /* 布局容器 */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background: #001529;
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .sidebar.collapsed .sidebar-logo span:last-child {
+            display: none;
+        }
+
+        .menu {
+            padding: 10px 0;
+        }
+
+        .menu-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .menu-item.active {
+            background: #1890ff;
+        }
+
+        .menu-item .icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu-item .text {
+            font-size: 14px;
+        }
+
+        .sidebar.collapsed .menu-item .text {
+            display: none;
+        }
+
+        .submenu {
+            background: rgba(0,0,0,0.15);
+            display: none;
+        }
+
+        .submenu.open {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 12px 20px 12px 56px;
+            cursor: pointer;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            transition: all 0.3s;
+        }
+
+        .submenu-item:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .submenu-item.active {
+            color: #1890ff;
+            background: rgba(24,144,255,0.1);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            margin-left: 220px;
+            transition: all 0.3s;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px;
+        }
+
+        /* 顶部导航 */
+        .top-header {
+            background: white;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .collapse-btn {
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .collapse-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .breadcrumb span:last-child {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-icon {
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .header-icon:hover {
+            background: #f0f0f0;
+        }
+
+        .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: #ff4d4f;
+            border-radius: 50%;
+        }
+
+        .badge.with-count {
+            width: auto;
+            height: auto;
+            min-width: 16px;
+            padding: 0 4px;
+            font-size: 11px;
+            color: white;
+            line-height: 16px;
+            text-align: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .user-info:hover {
+            background: #f0f0f0;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #1890ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        /* 页面内容 */
+        .page-content {
+            padding: 24px;
+        }
+
+        /* 统计卡片 */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue { background: #e6f7ff; }
+        .stat-icon.green { background: #f6ffed; }
+        .stat-icon.orange { background: #fff7e6; }
+        .stat-icon.red { background: #fff1f0; }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .stat-trend {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .stat-trend .up {
+            color: #52c41a;
+        }
+
+        .stat-trend .down {
+            color: #ff4d4f;
+        }
+
+        /* 图表区域 */
+        .chart-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            padding: 24px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-action {
+            padding: 4px 12px;
+            font-size: 13px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .chart-action.active {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        /* 模拟图表 */
+        .mock-chart {
+            height: 280px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            padding: 20px 0;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, #1890ff, #69c0ff);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+        }
+
+        .chart-bar-label {
+            position: absolute;
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #666;
+        }
+
+        .chart-bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* 饼图 */
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background: conic-gradient(
+                #1890ff 0deg 120deg,
+                #52c41a 120deg 210deg,
+                #faad14 210deg 280deg,
+                #ff4d4f 280deg 360deg
+            );
+            position: relative;
+        }
+
+        .pie-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pie-center-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .pie-center-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .pie-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        /* 列表区域 */
+        .list-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .list-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            padding: 24px;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .list-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .view-all {
+            font-size: 13px;
+            color: #1890ff;
+            cursor: pointer;
+        }
+
+        /* 待办列表 */
+        .todo-list {
+            list-style: none;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+
+        .todo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .todo-icon.warning { background: #fff7e6; }
+        .todo-icon.danger { background: #fff1f0; }
+        .todo-icon.info { background: #e6f7ff; }
+
+        .todo-content {
+            flex: 1;
+        }
+
+        .todo-title {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .todo-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .todo-action {
+            padding: 6px 14px;
+            font-size: 13px;
+            color: #1890ff;
+            border: 1px solid #1890ff;
+            border-radius: 4px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .todo-action:hover {
+            background: #1890ff;
+            color: white;
+        }
+
+        /* 热门服务列表 */
+        .service-list {
+            list-style: none;
+        }
+
+        .service-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .service-item:last-child {
+            border-bottom: none;
+        }
+
+        .service-rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .service-rank.top3 {
+            background: #fff2f0;
+            color: #ff4d4f;
+        }
+
+        .service-rank.other {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .service-meta {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .service-count {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* 实时动态 */
+        .activity-section {
+            margin-top: 24px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            padding: 24px;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-time {
+            font-size: 13px;
+            color: #999;
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .activity-content .highlight {
+            color: #1890ff;
+            cursor: pointer;
+        }
+
+        /* 页面切换 */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* 搜索筛选区 */
+        .filter-section {
+            background: white;
+            padding: 20px 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .filter-input {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .filter-input:focus {
+            border-color: #1890ff;
+        }
+
+        .filter-select {
+            padding: 8px 28px 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+
+        .btn-default {
+            background: white;
+            border: 1px solid #d9d9d9;
+            color: #666;
+        }
+
+        .btn-default:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        /* 数据表格 */
+        .table-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px 24px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #fafafa;
+            color: #666;
+            font-weight: 500;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        td {
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .tag-success {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .tag-warning {
+            background: #fffbe6;
+            color: #faad14;
+            border: 1px solid #ffe58f;
+        }
+
+        .tag-error {
+            background: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+
+        .tag-default {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #d9d9d9;
+        }
+
+        .tag-blue {
+            background: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 4px 12px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #1890ff;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #e6f7ff;
+        }
+
+        .action-btn.danger {
+            color: #ff4d4f;
+        }
+
+        .action-btn.danger:hover {
+            background: #fff1f0;
+        }
+
+        /* 分页 */
+        .pagination {
+            padding: 16px 24px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .page-btn.active {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 用户头像 */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar-small {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-info-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .user-phone {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 订单状态流程 */
+        .order-timeline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #d9d9d9;
+        }
+
+        .timeline-dot.active {
+            background: #52c41a;
+        }
+
+        .timeline-line {
+            width: 20px;
+            height: 2px;
+            background: #d9d9d9;
+        }
+
+        .timeline-line.active {
+            background: #52c41a;
+        }
+
+        /* 详情模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* 详情信息展示 */
+        .detail-section {
+            margin-bottom: 24px;
+        }
+
+        .detail-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 32px;
+        }
+
+        .detail-item {
+            display: flex;
+            gap: 12px;
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 14px;
+            width: 100px;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        /* 时间线 */
+        .timeline {
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #f0f0f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #1890ff;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .timeline-content {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 审核状态标签 */
+        .audit-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .audit-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .audit-dot.pending { background: #faad14; }
+        .audit-dot.approved { background: #52c41a; }
+        .audit-dot.rejected { background: #ff4d4f; }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .empty-text {
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* 快速操作区 */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .quick-action-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .quick-action-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .quick-action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 12px;
+        }
+
+        .quick-action-text {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .stat-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .chart-section,
+            .list-section {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar .menu-item .text,
+            .sidebar .sidebar-logo span:last-child {
+                display: none;
+            }
+            .main-content {
+                margin-left: 80px;
+            }
+            .stat-cards {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- 侧边栏 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <span>🐾</span>
+                    <span>宠物之家后台</span>
+                </div>
+            </div>
+            <nav class="menu">
+                <div class="menu-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+                    <span class="icon">📊</span>
+                    <span class="text">仪表盘</span>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('user-submenu')">
+                    <span class="icon">👥</span>
+                    <span class="text">用户管理</span>
+                </div>
+                <div class="submenu" id="user-submenu">
+                    <div class="submenu-item" data-page="users" onclick="switchPage('users')">会员管理</div>
+                    <div class="submenu-item" data-page="keepers" onclick="switchPage('keepers')">养家管理</div>
+                    <div class="submenu-item" data-page="doctors" onclick="switchPage('doctors')">医生管理</div>
+                    <div class="submenu-item" data-page="merchants" onclick="switchPage('merchants')">商家管理</div>
+                    <div class="submenu-item" data-page="pets" onclick="switchPage('pets')">宠物档案</div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('order-submenu')">
+                    <span class="icon">📦</span>
+                    <span class="text">订单中心</span>
+                </div>
+                <div class="submenu" id="order-submenu">
+                    <div class="submenu-item" data-page="foster-orders" onclick="switchPage('foster-orders')">寄养订单</div>
+                    <div class="submenu-item" data-page="medical-orders" onclick="switchPage('medical-orders')">医疗订单</div>
+                    <div class="submenu-item" data-page="product-orders" onclick="switchPage('product-orders')">商品订单</div>
+                    <div class="submenu-item" data-page="transport-orders" onclick="switchPage('transport-orders')">运输订单</div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('service-submenu')">
+                    <span class="icon">🏪</span>
+                    <span class="text">服务管理</span>
+                </div>
+                <div class="submenu" id="service-submenu">
+                    <div class="submenu-item" data-page="foster-service" onclick="switchPage('foster-service')">寄养服务审核</div>
+                    <div class="submenu-item" data-page="medical-service" onclick="switchPage('medical-service')">医疗服务配置</div>
+                    <div class="submenu-item" data-page="transport-service" onclick="switchPage('transport-service')">运输服务配置</div>
+                    <div class="submenu-item" data-page="hotel-service" onclick="switchPage('hotel-service')">酒店服务管理</div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('health-submenu')">
+                    <span class="icon">🏥</span>
+                    <span class="text">医疗健康管理</span>
+                </div>
+                <div class="submenu" id="health-submenu">
+                    <div class="submenu-item" data-page="health-records" onclick="switchPage('health-records')">健康档案</div>
+                    <div class="submenu-item" data-page="vaccine-records" onclick="switchPage('vaccine-records')">疫苗记录</div>
+                    <div class="submenu-item" data-page="deworm-records" onclick="switchPage('deworm-records')">驱虫记录</div>
+                    <div class="submenu-item" data-page="medication-reminders" onclick="switchPage('medication-reminders')">用药提醒</div>
+                    <div class="submenu-item" data-page="symptom-library" onclick="switchPage('symptom-library')">症状库管理</div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('content-submenu')">
+                    <span class="icon">📝</span>
+                    <span class="text">内容管理</span>
+                </div>
+                <div class="submenu" id="content-submenu">
+                    <div class="submenu-item" data-page="banners" onclick="switchPage('banners')">Banner管理</div>
+                    <div class="submenu-item" data-page="grid-config" onclick="switchPage('grid-config')">宫格入口配置</div>
+                    <div class="submenu-item" data-page="notices" onclick="switchPage('notices')">公告通知</div>
+                    <div class="submenu-item" data-page="reviews" onclick="switchPage('reviews')">评价管理</div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('community-submenu')">
+                    <span class="icon">💬</span>
+                    <span class="text">社区运营</span>
+                </div>
+                <div class="submenu" id="community-submenu">
+                    <div class="submenu-item" data-page="posts" onclick="switchPage('posts')">帖子管理</div>
+                    <div class="submenu-item" data-page="comments" onclick="switchPage('comments')">评论管理</div>
+                    <div class="submenu-item" data-page="topics" onclick="switchPage('topics')">话题标签</div>
+                    <div class="submenu-item" data-page="reports" onclick="switchPage('reports')">举报处理</div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('marketing-submenu')">
+                    <span class="icon">🎁</span>
+                    <span class="text">营销工具</span>
+                </div>
+                <div class="submenu" id="marketing-submenu">
+                    <div class="submenu-item" data-page="coupons" onclick="switchPage('coupons')">优惠券管理</div>
+                    <div class="submenu-item" data-page="seckill" onclick="switchPage('seckill')">秒杀活动</div>
+                    <div class="submenu-item" data-page="points" onclick="switchPage('points')">积分规则</div>
+                    <div class="submenu-item" data-page="membership" onclick="switchPage('membership')">会员等级</div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('cs-submenu')">
+                    <span class="icon">🎧</span>
+                    <span class="text">客服中心</span>
+                </div>
+                <div class="submenu" id="cs-submenu">
+                    <div class="submenu-item" data-page="online-cs" onclick="switchPage('online-cs')">在线咨询</div>
+                    <div class="submenu-item" data-page="tickets" onclick="switchPage('tickets')">工单管理</div>
+                    <div class="submenu-item" data-page="complaints" onclick="switchPage('complaints')">客诉处理</div>
+                    <div class="submenu-item" data-page="faq" onclick="switchPage('faq')">常见问题FAQ</div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('finance-submenu')">
+                    <span class="icon">💰</span>
+                    <span class="text">财务管理</span>
+                </div>
+                <div class="submenu" id="finance-submenu">
+                    <div class="submenu-item" data-page="transactions" onclick="switchPage('transactions')">交易流水</div>
+                    <div class="submenu-item" data-page="withdrawals" onclick="switchPage('withdrawals')">提现管理</div>
+                    <div class="submenu-item" data-page="refunds" onclick="switchPage('refunds')">退款审核</div>
+                    <div class="submenu-item" data-page="reports-finance" onclick="switchPage('reports-finance')">对账报表</div>
+                </div>
+
+                <div class="menu-item" data-page="settings" onclick="switchPage('settings')">
+                    <span class="icon">⚙️</span>
+                    <span class="text">系统设置</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航 -->
+            <header class="top-header">
+                <div class="header-left">
+                    <span class="collapse-btn" onclick="toggleSidebar()">☰</span>
+                    <div class="breadcrumb">
+                        <span id="breadcrumb-path">首页</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="header-icon">
+                        🔍
+                    </div>
+                    <div class="header-icon">
+                        🔔
+                        <span class="badge with-count">12</span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar">管</div>
+                        <span>管理员</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 页面内容 -->
+            <div class="page-content">
+                <!-- 仪表盘页面 -->
+                <div class="page-section active" id="page-dashboard">
+                    <!-- 统计卡片 -->
+                    <div class="stat-cards">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <span class="stat-title">今日GMV</span>
+                                <div class="stat-icon blue">💰</div>
+                            </div>
+                            <div class="stat-value">¥128,450</div>
+                            <div class="stat-trend">
+                                较昨日 <span class="up">↑ 12.5%</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <span class="stat-title">今日订单</span>
+                                <div class="stat-icon green">📦</div>
+                            </div>
+                            <div class="stat-value">342</div>
+                            <div class="stat-trend">
+                                较昨日 <span class="up">↑ 8.3%</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <span class="stat-title">新增用户</span>
+                                <div class="stat-icon orange">👤</div>
+                            </div>
+                            <div class="stat-value">89</div>
+                            <div class="stat-trend">
+                                较昨日 <span class="down">↓ 2.1%</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <span class="stat-title">活跃用户</span>
+                                <div class="stat-icon red">🔥</div>
+                            </div>
+                            <div class="stat-value">1,234</div>
+                            <div class="stat-trend">
+                                较昨日 <span class="up">↑ 15.7%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图表区 -->
+                    <div class="chart-section">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title">交易趋势</span>
+                                <div class="chart-actions">
+                                    <button class="chart-action active">近7天</button>
+                                    <button class="chart-action">近30天</button>
+                                </div>
+                            </div>
+                            <div class="mock-chart">
+                                <div class="chart-bar" style="height: 45%">
+                                    <span class="chart-bar-value">¥85k</span>
+                                    <span class="chart-bar-label">03-22</span>
+                                </div>
+                                <div class="chart-bar" style="height: 60%">
+                                    <span class="chart-bar-value">¥112k</span>
+                                    <span class="chart-bar-label">03-23</span>
+                                </div>
+                                <div class="chart-bar" style="height: 55%">
+                                    <span class="chart-bar-value">¥98k</span>
+                                    <span class="chart-bar-label">03-24</span>
+                                </div>
+                                <div class="chart-bar" style="height: 70%">
+                                    <span class="chart-bar-value">¥135k</span>
+                                    <span class="chart-bar-label">03-25</span>
+                                </div>
+                                <div class="chart-bar" style="height: 65%">
+                                    <span class="chart-bar-value">¥118k</span>
+                                    <span class="chart-bar-label">03-26</span>
+                                </div>
+                                <div class="chart-bar" style="height: 85%">
+                                    <span class="chart-bar-value">¥156k</span>
+                                    <span class="chart-bar-label">03-27</span>
+                                </div>
+                                <div class="chart-bar" style="height: 75%">
+                                    <span class="chart-bar-value">¥128k</span>
+                                    <span class="chart-bar-label">今天</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title">订单分布</span>
+                            </div>
+                            <div class="pie-chart">
+                                <div class="pie-center">
+                                    <span class="pie-center-value">342</span>
+                                    <span class="pie-center-label">总订单</span>
+                                </div>
+                            </div>
+                            <div class="pie-legend">
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #1890ff;"></span>
+                                    <span>寄养订单 35%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #52c41a;"></span>
+                                    <span>商品订单 28%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #faad14;"></span>
+                                    <span>医疗订单 22%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #ff4d4f;"></span>
+                                    <span>运输订单 15%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 列表区 -->
+                    <div class="list-section">
+                        <div class="list-card">
+                            <div class="list-header">
+                                <span class="list-title">待办事项</span>
+                                <span class="view-all">查看全部 →</span>
+                            </div>
+                            <ul class="todo-list">
+                                <li class="todo-item">
+                                    <div class="todo-icon warning">⚠️</div>
+                                    <div class="todo-content">
+                                        <div class="todo-title">待审核养家</div>
+                                        <div class="todo-desc">12个养家申请待审核</div>
+                                    </div>
+                                    <button class="todo-action">去审核</button>
+                                </li>
+                                <li class="todo-item">
+                                    <div class="todo-icon danger">💰</div>
+                                    <div class="todo-content">
+                                        <div class="todo-title">待处理退款</div>
+                                        <div class="todo-desc">5笔退款申请待处理</div>
+                                    </div>
+                                    <button class="todo-action">去处理</button>
+                                </li>
+                                <li class="todo-item">
+                                    <div class="todo-icon info">📦</div>
+                                    <div class="todo-content">
+                                        <div class="todo-title">待审核商品</div>
+                                        <div class="todo-desc">8个商品待上架审核</div>
+                                    </div>
+                                    <button class="todo-action">去审核</button>
+                                </li>
+                                <li class="todo-item">
+                                    <div class="todo-icon warning">🏥</div>
+                                    <div class="todo-content">
+                                        <div class="todo-title">待审核医生</div>
+                                        <div class="todo-desc">3位医生资质待审核</div>
+                                    </div>
+                                    <button class="todo-action">去审核</button>
+                                </li>
+                                <li class="todo-item">
+                                    <div class="todo-icon info">💬</div>
+                                    <div class="todo-content">
+                                        <div class="todo-title">待回复工单</div>
+                                        <div class="todo-desc">7个工单待客服回复</div>
+                                    </div>
+                                    <button class="todo-action">去回复</button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="list-card">
+                            <div class="list-header">
+                                <span class="list-title">热门服务TOP10</span>
+                                <span class="view-all">查看全部 →</span>
+                            </div>
+                            <ul class="service-list">
+                                <li class="service-item">
+                                    <span class="service-rank top3">1</span>
+                                    <div class="service-info">
+                                        <div class="service-name">李阿姨家庭寄养</div>
+                                        <div class="service-meta">朝阳区 · 4.9分</div>
+                                    </div>
+                                    <span class="service-count">23单</span>
+                                </li>
+                                <li class="service-item">
+                                    <span class="service-rank top3">2</span>
+                                    <div class="service-info">
+                                        <div class="service-name">瑞鹏宠物医院</div>
+                                        <div class="service-meta">海淀区 · 4.8分</div>
+                                    </div>
+                                    <span class="service-count">18单</span>
+                                </li>
+                                <li class="service-item">
+                                    <span class="service-rank top3">3</span>
+                                    <div class="service-info">
+                                        <div class="service-name">进口猫粮 5kg</div>
+                                        <div class="service-meta">品牌官方 · 月销500+</div>
+                                    </div>
+                                    <span class="service-count">16单</span>
+                                </li>
+                                <li class="service-item">
+                                    <span class="service-rank other">4</span>
+                                    <div class="service-info">
+                                        <div class="service-name">张医生在线咨询</div>
+                                        <div class="service-meta">皮肤科专家 · 4.9分</div>
+                                    </div>
+                                    <span class="service-count">14单</span>
+                                </li>
+                                <li class="service-item">
+                                    <span class="service-rank other">5</span>
+                                    <div class="service-info">
+                                        <div class="service-name">北京-上海宠物专车</div>
+                                        <div class="service-meta">24小时直达 · 安全保障</div>
+                                    </div>
+                                    <span class="service-count">12单</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 实时动态 -->
+                    <div class="activity-section">
+                        <div class="list-header">
+                            <span class="list-title">实时动态</span>
+                            <span class="view-all">刷新 ↻</span>
+                        </div>
+                        <ul class="activity-list">
+                            <li class="activity-item">
+                                <span class="activity-time">14:32</span>
+                                <div class="activity-content">
+                                    用户 <span class="highlight">138****1234</span> 下单了「进口猫粮 5kg」¥299
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <span class="activity-time">14:28</span>
+                                <div class="activity-content">
+                                    养家 <span class="highlight">「李阿姨」</span> 完成了一单寄养服务
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <span class="activity-time">14:25</span>
+                                <div class="activity-content">
+                                    新用户 <span class="highlight">宠物达人小王</span> 注册成功
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <span class="activity-time">14:20</span>
+                                <div class="activity-content">
+                                    医生 <span class="highlight">王医生</span> 接诊了在线咨询订单 #M20260328005
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <span class="activity-time">14:15</span>
+                                <div class="activity-content">
+                                    用户 <span class="highlight">139****5678</span> 发布了社区帖子
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 会员管理页面 -->
+                <div class="page-section" id="page-users">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <span class="filter-label">用户ID</span>
+                                <input type="text" class="filter-input" placeholder="请输入">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">手机号</span>
+                                <input type="text" class="filter-input" placeholder="请输入">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">会员等级</span>
+                                <select class="filter-select">
+                                    <option>全部等级</option>
+                                    <option>LV1-LV3</option>
+                                    <option>LV4-LV6</option>
+                                    <option>LV7-LV10</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">状态</span>
+                                <select class="filter-select">
+                                    <option>全部状态</option>
+                                    <option>正常</option>
+                                    <option>禁用</option>
+                                    <option>黑名单</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary">查询</button>
+                            <button class="btn btn-default">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="table-section">
+                        <div class="table-header">
+                            <span class="table-title">会员列表</span>
+                            <div class="table-actions">
+                                <button class="btn btn-default">导出数据</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>用户ID</th>
+                                        <th>用户信息</th>
+                                        <th>会员等级</th>
+                                        <th>积分</th>
+                                        <th>消费总额</th>
+                                        <th>宠物数量</th>
+                                        <th>注册时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>88456621</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%231890ff' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E宠%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">宠物主人</span>
+                                                    <span class="user-phone">138****1234</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="tag tag-blue">LV.5</span></td>
+                                        <td>3,580</td>
+                                        <td>¥12,800</td>
+                                        <td>2只</td>
+                                        <td>2025-01-15</td>
+                                        <td><span class="tag tag-success">正常</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('user')">查看</button>
+                                                <button class="action-btn">编辑</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>88456622</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%2352c41a' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E小%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">小王爱宠</span>
+                                                    <span class="user-phone">139****5678</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="tag tag-blue">LV.3</span></td>
+                                        <td>1,250</td>
+                                        <td>¥5,600</td>
+                                        <td>1只</td>
+                                        <td>2025-03-20</td>
+                                        <td><span class="tag tag-success">正常</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('user')">查看</button>
+                                                <button class="action-btn">编辑</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>88456623</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23faad14' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3EL%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">Lucy铲屎官</span>
+                                                    <span class="user-phone">137****9012</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="tag tag-blue">LV.8</span></td>
+                                        <td>8,920</td>
+                                        <td>¥36,500</td>
+                                        <td>3只</td>
+                                        <td>2024-08-10</td>
+                                        <td><span class="tag tag-success">正常</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('user')">查看</button>
+                                                <button class="action-btn">编辑</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>88456624</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23ff4d4f' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E恶%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">恶意用户001</span>
+                                                    <span class="user-phone">136****3456</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="tag tag-default">LV.1</span></td>
+                                        <td>0</td>
+                                        <td>¥0</td>
+                                        <td>0只</td>
+                                        <td>2026-03-28</td>
+                                        <td><span class="tag tag-error">已禁用</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('user')">查看</button>
+                                                <button class="action-btn">解禁</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>88456625</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%2313c2c2' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E喵%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">喵星人主人</span>
+                                                    <span class="user-phone">135****7890</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="tag tag-blue">LV.4</span></td>
+                                        <td>2,680</td>
+                                        <td>¥9,200</td>
+                                        <td>2只</td>
+                                        <td>2025-06-15</td>
+                                        <td><span class="tag tag-success">正常</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('user')">查看</button>
+                                                <button class="action-btn">编辑</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <button class="page-btn" disabled>上一页</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">4</button>
+                            <button class="page-btn">5</button>
+                            <button class="page-btn">下一页</button>
+                            <span style="font-size: 13px; color: #666;">共 50 页， 248 条</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 养家管理页面 -->
+                <div class="page-section" id="page-keepers">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <span class="filter-label">养家姓名</span>
+                                <input type="text" class="filter-input" placeholder="请输入">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">服务区域</span>
+                                <select class="filter-select">
+                                    <option>全部区域</option>
+                                    <option>朝阳区</option>
+                                    <option>海淀区</option>
+                                    <option>西城区</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">服务类型</span>
+                                <select class="filter-select">
+                                    <option>全部类型</option>
+                                    <option>狗</option>
+                                    <option>猫</option>
+                                    <option>异宠</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">审核状态</span>
+                                <select class="filter-select">
+                                    <option>全部状态</option>
+                                    <option>待审核</option>
+                                    <option>已通过</option>
+                                    <option>已拒绝</option>
+                                    <option>已下架</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary">查询</button>
+                            <button class="btn btn-default">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="table-section">
+                        <div class="table-header">
+                            <span class="table-title">养家列表</span>
+                            <div class="table-actions">
+                                <button class="btn btn-default">导出数据</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>养家ID</th>
+                                        <th>姓名/昵称</th>
+                                        <th>服务区域</th>
+                                        <th>服务类型</th>
+                                        <th>接单量</th>
+                                        <th>评分</th>
+                                        <th>资质状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>K10001</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23ff85c0' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E李%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">李阿姨</span>
+                                                    <span class="user-phone">138****1234</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>北京市朝阳区</td>
+                                        <td>狗、猫</td>
+                                        <td>156单</td>
+                                        <td>⭐ 4.9</td>
+                                        <td><span class="tag tag-success">已通过</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('keeper')">查看</button>
+                                                <button class="action-btn">下架</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>K10002</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23725bf' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E张%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">张叔叔</span>
+                                                    <span class="user-phone">139****5678</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>北京市海淀区</td>
+                                        <td>狗</td>
+                                        <td>89单</td>
+                                        <td>⭐ 4.8</td>
+                                        <td><span class="tag tag-success">已通过</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('keeper')">查看</button>
+                                                <button class="action-btn">下架</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>K10003</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23ffc53d' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E王%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">王小姐</span>
+                                                    <span class="user-phone">137****9012</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>北京市西城区</td>
+                                        <td>猫</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td><span class="tag tag-warning">待审核</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('keeper')">审核</button>
+                                                <button class="action-btn">查看</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>K10004</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23a0d911' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E陈%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">陈先生</span>
+                                                    <span class="user-phone">136****3456</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>北京市朝阳区</td>
+                                        <td>异宠</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td><span class="tag tag-error">已拒绝</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('keeper')">查看</button>
+                                                <button class="action-btn">重新审核</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <button class="page-btn" disabled>上一页</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">下一页</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 宠物档案页面 -->
+                <div class="page-section" id="page-pets">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <span class="filter-label">宠物昵称</span>
+                                <input type="text" class="filter-input" placeholder="请输入">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">品种</span>
+                                <select class="filter-select">
+                                    <option>全部品种</option>
+                                    <option>金毛</option>
+                                    <option>布偶猫</option>
+                                    <option>泰迪</option>
+                                    <option>英短</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">类型</span>
+                                <select class="filter-select">
+                                    <option>全部类型</option>
+                                    <option>狗</option>
+                                    <option>猫</option>
+                                    <option>异宠</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary">查询</button>
+                            <button class="btn btn-default">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="table-section">
+                        <div class="table-header">
+                            <span class="table-title">宠物档案</span>
+                            <div class="table-actions">
+                                <button class="btn btn-default">导出数据</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>宠物ID</th>
+                                        <th>宠物信息</th>
+                                        <th>主人信息</th>
+                                        <th>品种/类型</th>
+                                        <th>年龄</th>
+                                        <th>体重</th>
+                                        <th>疫苗状态</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>P202603001</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23d4a574' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-size='20'%3E🐶%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">豆豆</span>
+                                                    <span class="user-phone">公 · 已绝育</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>宠物主人 (138****1234)</td>
+                                        <td>金毛寻回犬 / 狗</td>
+                                        <td>3岁2个月</td>
+                                        <td>15.5kg</td>
+                                        <td><span class="tag tag-success">齐全</span></td>
+                                        <td><span class="tag tag-success">正常</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('pet')">查看</button>
+                                                <button class="action-btn">编辑</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>P202603002</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23f5f5f5' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-size='20'%3E🐱%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">咪咪</span>
+                                                    <span class="user-phone">母 · 未绝育</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>小王爱宠 (139****5678)</td>
+                                        <td>布偶猫 / 猫</td>
+                                        <td>1岁6个月</td>
+                                        <td>4.2kg</td>
+                                        <td><span class="tag tag-warning">部分</span></td>
+                                        <td><span class="tag tag-success">正常</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('pet')">查看</button>
+                                                <button class="action-btn">编辑</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>P202603003</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect fill='%23d4a574' width='36' height='36' rx='18'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-size='20'%3E🐕%3C/text%3E%3C/svg%3E" class="user-avatar-small" alt="">
+                                                <div class="user-info-text">
+                                                    <span class="user-name">可乐</span>
+                                                    <span class="user-phone">公 · 已绝育</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Lucy铲屎官 (137****9012)</td>
+                                        <td>泰迪 / 狗</td>
+                                        <td>2岁</td>
+                                        <td>5.8kg</td>
+                                        <td><span class="tag tag-success">齐全</span></td>
+                                        <td><span class="tag tag-success">正常</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('pet')">查看</button>
+                                                <button class="action-btn">编辑</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <button class="page-btn" disabled>上一页</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">下一页</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 寄养订单页面 -->
+                <div class="page-section" id="page-foster-orders">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <span class="filter-label">订单号</span>
+                                <input type="text" class="filter-input" placeholder="请输入">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">用户手机号</span>
+                                <input type="text" class="filter-input" placeholder="请输入">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">订单状态</span>
+                                <select class="filter-select">
+                                    <option>全部状态</option>
+                                    <option>待支付</option>
+                                    <option>待确认</option>
+                                    <option>服务中</option>
+                                    <option>已完成</option>
+                                    <option>已取消</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary">查询</button>
+                            <button class="btn btn-default">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="table-section">
+                        <div class="table-header">
+                            <span class="table-title">寄养订单</span>
+                            <div class="table-actions">
+                                <button class="btn btn-default">导出数据</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>订单号</th>
+                                        <th>用户信息</th>
+                                        <th>养家信息</th>
+                                        <th>服务时间</th>
+                                        <th>订单金额</th>
+                                        <th>订单状态</th>
+                                        <th>下单时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>#20260328001</td>
+                                        <td>宠物主人<br><small style="color:#999">138****1234</small></td>
+                                        <td>李阿姨的家</td>
+                                        <td>2026-03-28 至 2026-04-02<br><small style="color:#999">共5天</small></td>
+                                        <td>¥265</td>
+                                        <td><span class="tag tag-blue">服务中</span></td>
+                                        <td>2026-03-26 14:32</td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('order')">详情</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>#20260328002</td>
+                                        <td>小王爱宠<br><small style="color:#999">139****5678</small></td>
+                                        <td>张叔叔的家</td>
+                                        <td>2026-03-30 至 2026-04-05<br><small style="color:#999">共6天</small></td>
+                                        <td>¥380</td>
+                                        <td><span class="tag tag-warning">待确认</span></td>
+                                        <td>2026-03-28 10:15</td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('order')">详情</button>
+                                                <button class="action-btn">催单</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>#20260328003</td>
+                                        <td>喵星人主人<br><small style="color:#999">135****7890</small></td>
+                                        <td>王小姐的家</td>
+                                        <td>2026-04-01 至 2026-04-03<br><small style="color:#999">共2天</small></td>
+                                        <td>¥180</td>
+                                        <td><span class="tag tag-success">已完成</span></td>
+                                        <td>2026-03-25 09:20</td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('order')">详情</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>#20260328004</td>
+                                        <td>Lucy铲屎官<br><small style="color:#999">137****9012</small></td>
+                                        <td>李阿姨的家</td>
+                                        <td>2026-03-28 至 2026-03-30<br><small style="color:#999">共2天</small></td>
+                                        <td>¥150</td>
+                                        <td><span class="tag tag-error">已取消</span></td>
+                                        <td>2026-03-27 16:45</td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" onclick="showDetail('order')">详情</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <button class="page-btn" disabled>上一页</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">下一页</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 疫苗记录页面 -->
+                <div class="page-section" id="page-vaccine-records">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <span class="filter-label">宠物昵称</span>
+                                <input type="text" class="filter-input" placeholder="请输入">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">疫苗类型</span>
+                                <select class="filter-select">
+                                    <option>全部类型</option>
+                                    <option>狂犬疫苗</option>
+                                    <option>四联疫苗</option>
+                                    <option>六联疫苗</option>
+                                    <option>八联疫苗</option>
+                                    <option>猫三联</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">状态</span>
+                                <select class="filter-select">
+                                    <option>全部状态</option>
+                                    <option>有效</option>
+                                    <option>即将过期</option>
+                                    <option>已过期</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary">查询</button>
+                            <button class="btn btn-default">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="table-section">
+                        <div class="table-header">
+                            <span class="table-title">疫苗记录</span>
+                            <div class="table-actions">
+                                <button class="btn btn-primary">+ 添加记录</button>
+                                <button class="btn btn-default">导出数据</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>记录ID</th>
+                                        <th>宠物信息</th>
+                                        <th>疫苗类型</th>
+                                        <th>接种日期</th>
+                                        <th>有效期至</th>
+                                        <th>接种医院</th>
+                                        <th>下次接种</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>V202603001</td>
+                                        <td>🐶 豆豆 (金毛)</td>
+                                        <td>狂犬疫苗</td>
+                                        <td>2025-08-15</td>
+                                        <td>2026-08-15</td>
+                                        <td>瑞鹏宠物医院</td>
+                                        <td>2026-08-15</td>
+                                        <td><span class="tag tag-success">有效</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn">编辑</button>
+                                                <button class="action-btn danger">删除</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>V202603002</td>
+                                        <td>🐶 豆豆 (金毛)</td>
+                                        <td>犬四联疫苗</td>
+                                        <td>2025-06-20</td>
+                                        <td>2026-06-20</td>
+                                        <td>瑞鹏宠物医院</td>
+                                        <td>2026-06-20</td>
+                                        <td><span class="tag tag-success">有效</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn">编辑</button>
+                                                <button class="action-btn danger">删除</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>V202603003</td>
+                                        <td>🐱 咪咪 (布偶)</td>
+                                        <td>猫三联</td>
+                                        <td>2025-09-10</td>
+                                        <td>2026-03-10</td>
+                                        <td>宠爱国际医院</td>
+                                        <td>2026-09-10</td>
+                                        <td><span class="tag tag-warning">即将过期</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn">编辑</button>
+                                                <button class="action-btn danger">删除</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>V202603004</td>
+                                        <td>🐕 可乐 (泰迪)</td>
+                                        <td>狂犬疫苗</td>
+                                        <td>2024-03-15</td>
+                                        <td>2025-03-15</td>
+                                        <td>芭比堂动物医院</td>
+                                        <td>已过期</td>
+                                        <td><span class="tag tag-error">已过期</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn">编辑</button>
+                                                <button class="action-btn danger">删除</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <button class="page-btn" disabled>上一页</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">下一页</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他页面占位 -->
+                <div class="page-section" id="page-doctors">
+                    <div class="empty-state">
+                        <div class="empty-icon">🏥</div>
+                        <div class="empty-text">医生管理模块 - 功能同养家管理，含资质审核</div>
+                    </div>
+                </div>
+                <div class="page-section" id="page-merchants">
+                    <div class="empty-state">
+                        <div class="empty-icon">🏪</div>
+                        <div class="empty-text">商家管理模块 - 含入驻审核、保证金管理</div>
+                    </div>
+                </div>
+                <div class="page-section" id="page-medical-orders">
+                    <div class="empty-state">
+                        <div class="empty-icon">🩺</div>
+                        <div class="empty-text">医疗订单模块 - 在线咨询订单管理</div>
+                    </div>
+                </div>
+                <div class="page-section" id="page-product-orders">
+                    <div class="empty-state">
+                        <div class="empty-icon">📦</div>
+                        <div class="empty-text">商品订单模块 - 电商订单管理</div>
+                    </div>
+                </div>
+                <div class="page-section" id="page-transport-orders">
+                    <div class="empty-state">
+                        <div class="empty-icon">🚗</div>
+                        <div class="empty-text">运输订单模块 - 宠物运输订单管理</div>
+                    </div>
+                </div>
+                <div class="page-section" id="page-settings">
+                    <div class="empty-state">
+                        <div class="empty-icon">⚙️</div>
+                        <div class="empty-text">系统设置模块 - 权限管理、操作日志、系统参数</div>
+                    </div>
+                </div>
+
+                <!-- 快速入口页面（其他模块暂未展开的提示） -->
+                <div class="page-section" id="page-placeholder">
+                    <div class="quick-actions">
+                        <div class="quick-action-item" onclick="switchPage('foster-service')">
+                            <div class="quick-action-icon" style="background: #e6f7ff;">🏠</div>
+                            <div class="quick-action-text">寄养服务审核</div>
+                        </div>
+                        <div class="quick-action-item" onclick="switchPage('medical-service')">
+                            <div class="quick-action-icon" style="background: #f6ffed;">🏥</div>
+                            <div class="quick-action-text">医疗服务配置</div>
+                        </div>
+                        <div class="quick-action-item" onclick="switchPage('posts')">
+                            <div class="quick-action-icon" style="background: #fff7e6;">💬</div>
+                            <div class="quick-action-text">社区帖子管理</div>
+                        </div>
+                        <div class="quick-action-item" onclick="switchPage('coupons')">
+                            <div class="quick-action-icon" style="background: #fff1f0;">🎫</div>
+                            <div class="quick-action-text">优惠券管理</div>
+                        </div>
+                        <div class="quick-action-item" onclick="switchPage('transactions')">
+                            <div class="quick-action-icon" style="background: #f9f0ff;">💳</div>
+                            <div class="quick-action-text">交易流水</div>
+                        </div>
+                        <div class="quick-action-item" onclick="switchPage('withdrawals')">
+                            <div class="quick-action-icon" style="background: #e6fffb;">💰</div>
+                            <div class="quick-action-text">提现管理</div>
+                        </div>
+                    </div>
+                    <div class="empty-state">
+                        <div class="empty-icon">🚧</div>
+                        <div class="empty-text">该模块演示页面暂未展开，请点击上方快速入口或侧边栏菜单切换</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 详情模态框 -->
+    <div class="modal-overlay" id="detailModal" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">详情</span>
+                <span class="modal-close" onclick="closeModal()">✕</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 动态内容 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeModal()">关闭</button>
+                <button class="btn btn-primary" id="modalConfirmBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 切换侧边栏
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        // 切换子菜单
+        function toggleSubmenu(id) {
+            const submenu = document.getElementById(id);
+            submenu.classList.toggle('open');
+        }
+
+        // 切换页面
+        function switchPage(pageName) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // 显示目标页面
+            const targetPage = document.getElementById('page-' + pageName);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            } else {
+                document.getElementById('page-placeholder').classList.add('active');
+            }
+
+            // 更新菜单激活状态
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelectorAll('.submenu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            const activeMenu = document.querySelector(`[data-page="${pageName}"]`);
+            if (activeMenu) {
+                activeMenu.classList.add('active');
+            }
+
+            // 更新面包屑
+            updateBreadcrumb(pageName);
+        }
+
+        // 更新面包屑
+        function updateBreadcrumb(pageName) {
+            const breadcrumbMap = {
+                'dashboard': '首页 / 仪表盘',
+                'users': '用户管理 / 会员管理',
+                'keepers': '用户管理 / 养家管理',
+                'doctors': '用户管理 / 医生管理',
+                'merchants': '用户管理 / 商家管理',
+                'pets': '用户管理 / 宠物档案',
+                'foster-orders': '订单中心 / 寄养订单',
+                'medical-orders': '订单中心 / 医疗订单',
+                'product-orders': '订单中心 / 商品订单',
+                'transport-orders': '订单中心 / 运输订单',
+                'health-records': '医疗健康管理 / 健康档案',
+                'vaccine-records': '医疗健康管理 / 疫苗记录',
+                'deworm-records': '医疗健康管理 / 驱虫记录',
+                'medication-reminders': '医疗健康管理 / 用药提醒',
+                'symptom-library': '医疗健康管理 / 症状库',
+                'settings': '系统设置'
+            };
+            document.getElementById('breadcrumb-path').textContent = breadcrumbMap[pageName] || '首页';
+        }
+
+        // 显示详情弹窗
+        function showDetail(type) {
+            const modal = document.getElementById('detailModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+
+            const detailContent = {
+                'user': {
+                    title: '会员详情',
+                    content: `
+                        <div class="detail-section">
+                            <div class="detail-section-title">基础信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">用户ID</span>
+                                    <span class="detail-value">88456621</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">昵称</span>
+                                    <span class="detail-value">宠物主人</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">手机号</span>
+                                    <span class="detail-value">138****1234</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">注册时间</span>
+                                    <span class="detail-value">2025-01-15 14:32:18</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">会员等级</span>
+                                    <span class="detail-value"><span class="tag tag-blue">LV.5</span></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">积分余额</span>
+                                    <span class="detail-value">3,580</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">数据统计</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">消费总额</span>
+                                    <span class="detail-value">¥12,800</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">订单数量</span>
+                                    <span class="detail-value">23笔</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">平均客单价</span>
+                                    <span class="detail-value">¥557</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">最近消费</span>
+                                    <span class="detail-value">2026-03-26</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">宠物档案</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">宠物数量</span>
+                                    <span class="detail-value">2只</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">宠物列表</span>
+                                    <span class="detail-value">🐶 豆豆 (金毛) · 🐱 小花 (英短)</span>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'keeper': {
+                    title: '养家详情',
+                    content: `
+                        <div class="detail-section">
+                            <div class="detail-section-title">个人信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">养家ID</span>
+                                    <span class="detail-value">K10001</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">真实姓名</span>
+                                    <span class="detail-value">李桂花</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">对外昵称</span>
+                                    <span class="detail-value">李阿姨的家</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">手机号</span>
+                                    <span class="detail-value">138****1234</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">身份证号</span>
+                                    <span class="detail-value">110101********1234</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">居住地址</span>
+                                    <span class="detail-value">北京市朝阳区XX小区 3号楼 201</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">居住环境</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">房屋面积</span>
+                                    <span class="detail-value">120㎡</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">是否有院子</span>
+                                    <span class="detail-value">是</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">原住民宠物</span>
+                                    <span class="detail-value">1只金毛（性格温顺）</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">最大接待数</span>
+                                    <span class="detail-value">3只</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">服务配置</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">服务类型</span>
+                                    <span class="detail-value">狗、猫</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">价格设置</span>
+                                    <span class="detail-value">小型犬 ¥45/天 · 中型犬 ¥55/天 · 大型犬 ¥65/天</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">接单量</span>
+                                    <span class="detail-value">156单</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">用户评分</span>
+                                    <span class="detail-value">⭐ 4.9分</span>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'pet': {
+                    title: '宠物档案详情',
+                    content: `
+                        <div class="detail-section">
+                            <div class="detail-section-title">基本信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">宠物ID</span>
+                                    <span class="detail-value">P202603001</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">昵称</span>
+                                    <span class="detail-value">🐶 豆豆</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">品种</span>
+                                    <span class="detail-value">金毛寻回犬</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">类型</span>
+                                    <span class="detail-value">狗</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">性别</span>
+                                    <span class="detail-value">公</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">绝育状态</span>
+                                    <span class="detail-value">已绝育</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">年龄</span>
+                                    <span class="detail-value">3岁2个月</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">体重</span>
+                                    <span class="detail-value">15.5kg</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">主人信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">主人昵称</span>
+                                    <span class="detail-value">宠物主人</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">手机号</span>
+                                    <span class="detail-value">138****1234</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">健康档案概览</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">疫苗状态</span>
+                                    <span class="detail-value"><span class="tag tag-success">齐全</span> (下次狂犬: 2026-08-15)</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">驱虫状态</span>
+                                    <span class="detail-value"><span class="tag tag-success">已驱虫</span> (下次: 2026-04-15)</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">健康评分</span>
+                                    <span class="detail-value"><span class="tag tag-success">95分</span> [良好]</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">特殊标记</span>
+                                    <span class="detail-value">对鸡肉过敏、需每日服药</span>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'order': {
+                    title: '订单详情',
+                    content: `
+                        <div class="detail-section">
+                            <div class="detail-section-title">订单信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">订单号</span>
+                                    <span class="detail-value">#20260328001</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">订单状态</span>
+                                    <span class="detail-value"><span class="tag tag-blue">服务中</span></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">下单时间</span>
+                                    <span class="detail-value">2026-03-26 14:32:18</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">支付时间</span>
+                                    <span class="detail-value">2026-03-26 14:33:05</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">用户信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">用户昵称</span>
+                                    <span class="detail-value">宠物主人</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">手机号</span>
+                                    <span class="detail-value">138****1234</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">宠物信息</span>
+                                    <span class="detail-value">🐶 豆豆 (金毛·3岁·公·已绝育·15kg)</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">特殊需求</span>
+                                    <span class="detail-value">每日需服药，对鸡肉过敏</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">服务信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">养家名称</span>
+                                    <span class="detail-value">李阿姨的家</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">服务地址</span>
+                                    <span class="detail-value">北京市朝阳区XX小区 3号楼 201</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">服务时间</span>
+                                    <span class="detail-value">2026-03-28 至 2026-04-02 (共5天)</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">单价</span>
+                                    <span class="detail-value">¥45/天</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">费用明细</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">寄养费</span>
+                                    <span class="detail-value">¥225</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">上门接送</span>
+                                    <span class="detail-value">¥50</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">保险</span>
+                                    <span class="detail-value">¥10</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">优惠券</span>
+                                    <span class="detail-value" style="color: #52c41a;">-¥20</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">实付金额</span>
+                                    <span class="detail-value" style="font-weight: 600; font-size: 16px;">¥265</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-section-title">订单日志</div>
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-time">2026-03-26 14:32</div>
+                                    <div class="timeline-content">用户下单</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-time">2026-03-26 14:33</div>
+                                    <div class="timeline-content">支付成功</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-time">2026-03-28 09:00</div>
+                                    <div class="timeline-content">服务开始</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-time">2026-03-28 10:15</div>
+                                    <div class="timeline-content">养家确认接收宠物</div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+            };
+
+            const detail = detailContent[type];
+            if (detail) {
+                title.textContent = detail.title;
+                body.innerHTML = detail.content;
+                modal.classList.add('open');
+            }
+        }
+
+        // 关闭弹窗
+        function closeModal(event) {
+            if (!event || event.target === document.getElementById('detailModal')) {
+                document.getElementById('detailModal').classList.remove('open');
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 默认展开仪表盘
+            switchPage('dashboard');
+        });
+    </script>
+</body>
+</html>

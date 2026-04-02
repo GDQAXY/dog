@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>宠物运输小程序演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 手机外框 */
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 50px;
+            padding: 12px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* 手机听筒 */
+        .phone-speaker {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            z-index: 10;
+        }
+
+        /* 手机屏幕 */
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #f5f5f5;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            height: 44px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding-top: 12px;
+        }
+
+        .status-time {
+            font-size: 14px;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .signal-icon, .wifi-icon, .battery-icon {
+            font-size: 12px;
+        }
+
+        /* 小程序导航栏 */
+        .mp-nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 15px 15px;
+            position: relative;
+        }
+
+        .mp-nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .mp-back {
+            position: absolute;
+            left: 0;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .mp-title {
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .mp-more {
+            position: absolute;
+            right: 0;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .capsule-btn {
+            position: absolute;
+            right: 0;
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .capsule-item {
+            padding: 5px 12px;
+            color: white;
+            font-size: 12px;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .capsule-item:last-child {
+            border-right: none;
+        }
+
+        /* 小程序胶囊菜单 */
+        .capsule-menu {
+            position: absolute;
+            right: 0;
+            display: flex;
+            background: rgba(0,0,0,0.15);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .capsule-dot {
+            width: 18px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .capsule-dot::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 -10px 0 white, 0 10px 0 white;
+        }
+
+        .capsule-line {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            margin: 6px 0;
+        }
+
+        .capsule-x {
+            width: 40px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        /* 可滚动内容区 */
+        .scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scroll-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ===== 原有样式 ===== */
+        .container {
+            background: #f5f5f5;
+            min-height: 100%;
+        }
+
+        /* 订单状态卡片 */
+        .status-card {
+            background: white;
+            margin: 12px;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .status-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .status-text-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-text {
+            font-size: 17px;
+            font-weight: 600;
+            color: #11998e;
+        }
+
+        .status-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .order-no {
+            font-size: 11px;
+            color: #999;
+            background: #f5f5f5;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        /* 路线时间线 */
+        .route-timeline {
+            position: relative;
+            padding-left: 24px;
+            margin-top: 15px;
+        }
+
+        .route-timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(to bottom, #ff6b6b, #74b9ff, #1dd1a1);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 14px;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -20px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: white;
+        }
+
+        .timeline-dot.start {
+            background: #ff6b6b;
+        }
+
+        .timeline-dot.waypoint {
+            background: #74b9ff;
+            width: 12px;
+            height: 12px;
+            left: -18px;
+            top: 3px;
+        }
+
+        .timeline-dot.waypoint.completed {
+            background: #1dd1a1;
+        }
+
+        .timeline-dot.current {
+            background: #ffa502;
+            animation: pulse 2s infinite;
+        }
+
+        .timeline-dot.end {
+            background: #1dd1a1;
+        }
+
+        .timeline-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timeline-location {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .timeline-time {
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* 地图区域 */
+        .map-section {
+            background: white;
+            margin: 0 12px 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .map-container {
+            height: 200px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(100, 149, 237, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100, 149, 237, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .route-line {
+            position: absolute;
+            top: 25%;
+            left: 15%;
+            width: 70%;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #1dd1a1);
+            border-radius: 2px;
+            transform: rotate(-8deg);
+        }
+
+        .location-marker {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .marker-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .marker-label {
+            margin-top: 3px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+        }
+
+        .start-point {
+            top: 18%;
+            left: 12%;
+        }
+
+        .start-point .marker-icon {
+            background: #ff6b6b;
+            animation: bounce 2s infinite;
+        }
+
+        .end-point {
+            top: 60%;
+            right: 12%;
+        }
+
+        .end-point .marker-icon {
+            background: #1dd1a1;
+        }
+
+        .waypoint-marker {
+            top: 28%;
+            left: 32%;
+        }
+
+        .waypoint-marker .marker-icon {
+            background: #74b9ff;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+        }
+
+        .waypoint-marker:nth-of-type(4) {
+            top: 45%;
+            left: 55%;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .car-marker {
+            position: absolute;
+            top: 35%;
+            left: 42%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            animation: carMove 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes carMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(6px, -3px); }
+        }
+
+        .car-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
+            border: 2px solid white;
+            position: relative;
+        }
+
+        .car-icon::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 12px;
+            height: 12px;
+            background: #2ecc71;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .car-label {
+            margin-top: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .distance-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.95);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .distance-badge span {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .map-info {
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .map-info-item {
+            text-align: center;
+        }
+
+        .map-info-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .map-info-label {
+            font-size: 10px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .refresh-btn {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 实时画面 */
+        .live-section {
+            background: white;
+            margin: 0 12px 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .section-header {
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .live-badge {
+            background: #ff4757;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .live-badge::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .view-toggle {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 12px;
+            padding: 2px;
+        }
+
+        .view-btn {
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            border: none;
+            background: transparent;
+        }
+
+        .view-btn.active {
+            background: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: #f0f0f0;
+        }
+
+        .video-item {
+            aspect-ratio: 4/3;
+            background: linear-gradient(135deg, #2d3436, #636e72);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .video-icon {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        .video-label {
+            font-size: 11px;
+        }
+
+        .video-status {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 9px;
+        }
+
+        .video-time {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 10px;
+        }
+
+        /* 宠物状态 */
+        .pet-section {
+            background: white;
+            margin: 0 12px 12px;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .pet-info {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .pet-avatar {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .pet-details {
+            flex: 1;
+        }
+
+        .pet-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pet-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .pet-status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #d4edda;
+            color: #155724;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        .update-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .update-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .update-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .update-time {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .update-author {
+            font-size: 11px;
+            color: #667eea;
+        }
+
+        .update-text {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .update-images {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .update-img {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        /* 司机卡片 */
+        .driver-section {
+            background: white;
+            margin: 0 12px 12px;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .driver-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .driver-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            position: relative;
+        }
+
+        .driver-status {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 14px;
+            height: 14px;
+            background: #2ecc71;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .driver-info {
+            flex: 1;
+        }
+
+        .driver-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .driver-rating {
+            color: #ffa502;
+            font-size: 12px;
+        }
+
+        .driver-stats {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .driver-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .driver-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .driver-btn.phone {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .driver-btn.chat {
+            background: #f3e5f5;
+            color: #9c27b0;
+        }
+
+        /* 快捷操作 */
+        .actions-section {
+            background: white;
+            margin: 0 12px 12px;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .action-text {
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* 底部栏 */
+        .bottom-bar {
+            background: white;
+            border-top: 1px solid #eee;
+            padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: #f0f0f0;
+            border: none;
+            padding: 11px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            flex: 2;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 11px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            height: 83px;
+            background: white;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 8px;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+        }
+
+        .tab-icon {
+            font-size: 24px;
+        }
+
+        .tab-text {
+            font-size: 10px;
+            color: #999;
+        }
+
+        .tab-item.active .tab-text {
+            color: #07c160;
+        }
+
+        /* Home Indicator */
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 134px;
+            height: 5px;
+            background: #000;
+            border-radius: 3px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 3000;
+            display: none;
+        }
+
+        .toast.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 演示标签 */
+        .demo-badge {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            z-index: 100;
+        }
+
+        .demo-info {
+            position: absolute;
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        /* 小程序菜单遮罩 */
+        .menu-overlay {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: rgba(0,0,0,0.85);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 140px;
+            display: none;
+            z-index: 2000;
+        }
+
+        .menu-overlay.active {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 10px 16px;
+            color: white;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-item:active {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* 分享弹窗 */
+        .share-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .share-sheet.active {
+            display: flex;
+        }
+
+        .share-content {
+            background: #f5f5f5;
+            width: 375px;
+            border-radius: 16px 16px 0 0;
+            padding: 20px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .share-title {
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .share-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: white;
+        }
+
+        .share-text {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .share-cancel {
+            background: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 100%;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-badge">🐾 宠物运输小程序演示</div>
+
+    <div class="phone-frame">
+        <div class="phone-speaker"></div>
+
+        <div class="phone-screen">
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <span class="status-time" id="statusTime">9:41</span>
+                <div class="status-icons">
+                    <span class="signal-icon">📶</span>
+                    <span class="wifi-icon">📡</span>
+                    <span class="battery-icon">🔋</span>
+                </div>
+            </div>
+
+            <!-- 小程序导航栏 -->
+            <div class="mp-nav">
+                <div class="mp-nav-content">
+                    <div class="mp-back" onclick="goBack()">
+                        <span>‹</span>
+                        <span>返回</span>
+                    </div>
+                    <span class="mp-title">运输追踪</span>
+                    <div class="capsule-menu" onclick="toggleMenu()">
+                        <div class="capsule-dot"></div>
+                        <div class="capsule-line"></div>
+                        <div class="capsule-x">×</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 菜单遮罩 -->
+            <div class="menu-overlay" id="menuOverlay">
+                <div class="menu-item" onclick="showShare()">↗️ 分享</div>
+                <div class="menu-item" onclick="showToast('已刷新')">🔄 刷新</div>
+                <div class="menu-item" onclick="showToast('投诉建议')">📝 反馈</div>
+            </div>
+
+            <!-- 可滚动内容 -->
+            <div class="scroll-content">
+                <div class="container">
+                    <!-- 订单状态 -->
+                    <div class="status-card">
+                        <div class="status-header">
+                            <div class="status-title">
+                                <div class="status-icon">🚗</div>
+                                <div class="status-text-group">
+                                    <div class="status-text">运输中</div>
+                                    <div class="status-time">预计今日 18:00 送达</div>
+                                </div>
+                            </div>
+                            <div class="order-no">TR20241030001</div>
+                        </div>
+
+                        <!-- 路线时间线 -->
+                        <div class="route-timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot start">起</div>
+                                <div class="timeline-content">
+                                    <span class="timeline-location">北京市朝阳区</span>
+                                    <span class="timeline-time">08:30</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot waypoint completed"></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-location">济南服务区 ✓</span>
+                                    <span class="timeline-time">10:30</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot current">📍</div>
+                                <div class="timeline-content">
+                                    <span class="timeline-location">徐州收费站</span>
+                                    <span class="timeline-time" style="color:#ffa502;">当前位置</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot waypoint"></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-location">南京服务区</span>
+                                    <span class="timeline-time">预计 15:00</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot end">终</div>
+                                <div class="timeline-content">
+                                    <span class="timeline-location">上海市浦东新区</span>
+                                    <span class="timeline-time">预计 18:00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 地图区域 -->
+                    <div class="map-section">
+                        <div class="map-container">
+                            <div class="map-grid"></div>
+                            <div class="route-line"></div>
+
+                            <div class="location-marker start-point">
+                                <div class="marker-icon">📍</div>
+                                <div class="marker-label">北京</div>
+                            </div>
+
+                            <div class="location-marker waypoint-marker">
+                                <div class="marker-icon">✓</div>
+                                <div class="marker-label">济南</div>
+                            </div>
+
+                            <div class="location-marker waypoint-marker">
+                                <div class="marker-icon" style="background:#ffa502;">📍</div>
+                                <div class="marker-label">徐州</div>
+                            </div>
+
+                            <div class="location-marker end-point">
+                                <div class="marker-icon">🏁</div>
+                                <div class="marker-label">上海</div>
+                            </div>
+
+                            <div class="car-marker">
+                                <div class="car-icon">🚐</div>
+                                <div class="car-label">当前位置</div>
+                            </div>
+
+                            <div class="distance-badge">
+                                剩余 <span>450km</span>
+                            </div>
+                        </div>
+
+                        <div class="map-info">
+                            <div class="map-info-item">
+                                <div class="map-info-value">🚐 京A·88888</div>
+                                <div class="map-info-label">运输车辆</div>
+                            </div>
+                            <div class="map-info-item">
+                                <div class="map-info-value">🛣️ G2京沪</div>
+                                <div class="map-info-label">当前路段</div>
+                            </div>
+                            <button class="refresh-btn" onclick="refreshLocation()">
+                                <span>🔄</span> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 实时画面 -->
+                    <div class="live-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                📹 车内监控
+                                <span class="live-badge">LIVE</span>
+                            </div>
+                            <div class="view-toggle">
+                                <button class="view-btn active">分屏</button>
+                                <button class="view-btn">全屏</button>
+                            </div>
+                        </div>
+                        <div class="video-grid">
+                            <div class="video-item">
+                                <div class="video-placeholder">
+                                    <div class="video-icon">🐶</div>
+                                    <div class="video-label">豆豆</div>
+                                </div>
+                                <div class="video-status">直播中</div>
+                                <div class="video-time" id="videoTime1">12:34:56</div>
+                            </div>
+                            <div class="video-item">
+                                <div class="video-placeholder" style="background: linear-gradient(135deg, #434343, #000);">
+                                    <div class="video-icon">📷</div>
+                                    <div class="video-label">全景</div>
+                                </div>
+                                <div class="video-status">直播中</div>
+                                <div class="video-time" id="videoTime2">12:34:56</div>
+                            </div>
+                            <div class="video-item">
+                                <div class="video-placeholder" style="background: linear-gradient(135deg, #2c3e50, #34495e);">
+                                    <div class="video-icon">🌡️</div>
+                                    <div class="video-label">温度</div>
+                                </div>
+                                <div class="video-status">24.5°C</div>
+                                <div class="video-time">正常</div>
+                            </div>
+                            <div class="video-item">
+                                <div class="video-placeholder" style="background: linear-gradient(135deg, #0f2027, #203a43);">
+                                    <div class="video-icon">🗺️</div>
+                                    <div class="video-label">司机</div>
+                                </div>
+                                <div class="video-status">直播中</div>
+                                <div class="video-time" id="videoTime3">12:34:56</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 宠物状态 -->
+                    <div class="pet-section">
+                        <div class="section-title">🐾 宠物状态</div>
+                        <div class="pet-info">
+                            <div class="pet-avatar">🐶</div>
+                            <div class="pet-details">
+                                <div class="pet-name">
+                                    豆豆
+                                    <span class="pet-meta">泰迪 · 3岁 · 5.2kg</span>
+                                </div>
+                                <div class="pet-meta">北京 → 上海 · 途经3站</div>
+                                <span class="pet-status-tag">😊 状态良好</span>
+                            </div>
+                        </div>
+
+                        <div class="update-item">
+                            <div class="update-header">
+                                <span class="update-time">10:30</span>
+                                <span class="update-author">李师傅</span>
+                            </div>
+                            <div class="update-text">济南服务区休息20分钟，豆豆喝了水，上了厕所，精神很好。</div>
+                            <div class="update-images">
+                                <div class="update-img">📷</div>
+                                <div class="update-img">📷</div>
+                            </div>
+                        </div>
+
+                        <div class="update-item">
+                            <div class="update-header">
+                                <span class="update-time">08:15</span>
+                                <span class="update-author">李师傅</span>
+                            </div>
+                            <div class="update-text">已完成接宠，狗狗很乖，路上很配合。已系好安全带。</div>
+                        </div>
+                    </div>
+
+                    <!-- 司机信息 -->
+                    <div class="driver-section">
+                        <div class="section-title">👨‍✈️ 司机信息</div>
+                        <div class="driver-card">
+                            <div class="driver-avatar">
+                                👨‍✈️
+                                <div class="driver-status"></div>
+                            </div>
+                            <div class="driver-info">
+                                <div class="driver-name">
+                                    李师傅
+                                    <span class="driver-rating">⭐ 4.9</span>
+                                </div>
+                                <div class="driver-stats">已完成832单 · 安全行驶50万公里</div>
+                                <div class="driver-stats">🚐 福特全顺 · 专业宠物运输车</div>
+                            </div>
+                            <div class="driver-actions">
+                                <button class="driver-btn phone" onclick="callDriver()">📞</button>
+                                <button class="driver-btn chat" onclick="chatDriver()">💬</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快捷操作 -->
+                    <div class="actions-section">
+                        <div class="section-title">快捷操作</div>
+                        <div class="actions-grid">
+                            <div class="action-item" onclick="showShare()">
+                                <div class="action-icon" style="background:#e3f2fd;">↗️</div>
+                                <div class="action-text">分享</div>
+                            </div>
+                            <div class="action-item" onclick="showToast('已保存')">
+                                <div class="action-icon" style="background:#e8f5e9;">💾</div>
+                                <div class="action-text">保存</div>
+                            </div>
+                            <div class="action-item" onclick="showToast('保险凭证')">
+                                <div class="action-icon" style="background:#fff3e0;">📄</div>
+                                <div class="action-text">保险</div>
+                            </div>
+                            <div class="action-item" onclick="showToast('客服')">
+                                <div class="action-icon" style="background:#fce4ec;">🎧</div>
+                                <div class="action-text">客服</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 底部占位 -->
+                    <div style="height:20px;"></div>
+                </div>
+            </div>
+
+            <!-- Tab Bar -->
+            <div class="tab-bar">
+                <div class="tab-item" onclick="switchTab(0)">
+                    <div class="tab-icon">🏠</div>
+                    <div class="tab-text">首页</div>
+                </div>
+                <div class="tab-item active" onclick="switchTab(1)">
+                    <div class="tab-icon">📋</div>
+                    <div class="tab-text">订单</div>
+                </div>
+                <div class="tab-item" onclick="switchTab(2)">
+                    <div class="tab-icon">💬</div>
+                    <div class="tab-text">消息</div>
+                </div>
+                <div class="tab-item" onclick="switchTab(3)">
+                    <div class="tab-icon">👤</div>
+                    <div class="tab-text">我的</div>
+                </div>
+            </div>
+
+            <!-- Home Indicator -->
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+
+    <div class="demo-info">iPhone 14 Pro 尺寸 · 375×812</div>
+
+    <!-- 分享弹窗 -->
+    <div class="share-sheet" id="shareSheet" onclick="hideShare(event)">
+        <div class="share-content" onclick="event.stopPropagation()">
+            <div class="share-title">分享到</div>
+            <div class="share-options">
+                <div class="share-option" onclick="showToast('微信好友')">
+                    <div class="share-icon" style="background:#07c160;">💬</div>
+                    <div class="share-text">微信好友</div>
+                </div>
+                <div class="share-option" onclick="showToast('朋友圈')">
+                    <div class="share-icon" style="background:#07c160;">📱</div>
+                    <div class="share-text">朋友圈</div>
+                </div>
+                <div class="share-option" onclick="showToast('复制链接')">
+                    <div class="share-icon" style="background:#667eea;">🔗</div>
+                    <div class="share-text">复制链接</div>
+                </div>
+                <div class="share-option" onclick="showToast('生成海报')">
+                    <div class="share-icon" style="background:#ff6b6b;">🖼️</div>
+                    <div class="share-text">生成海报</div>
+                </div>
+            </div>
+            <button class="share-cancel" onclick="hideShare()">取消</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('statusTime').textContent = hours + ':' + minutes;
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // 更新视频时间
+        function updateVideoTime() {
+            const now = new Date();
+            const timeStr = now.toTimeString().slice(0, 8);
+            document.getElementById('videoTime1').textContent = timeStr;
+            document.getElementById('videoTime2').textContent = timeStr;
+            document.getElementById('videoTime3').textContent = timeStr;
+        }
+        setInterval(updateVideoTime, 1000);
+
+        // 返回
+        function goBack() {
+            showToast('返回上一页');
+        }
+
+        // 切换菜单
+        function toggleMenu() {
+            const menu = document.getElementById('menuOverlay');
+            menu.classList.toggle('active');
+        }
+
+        // 显示分享
+        function showShare() {
+            document.getElementById('shareSheet').classList.add('active');
+            document.getElementById('menuOverlay').classList.remove('active');
+        }
+
+        // 隐藏分享
+        function hideShare(event) {
+            if (!event || event.target.id === 'shareSheet') {
+                document.getElementById('shareSheet').classList.remove('active');
+            }
+        }
+
+        // 刷新位置
+        function refreshLocation() {
+            showToast('位置已更新');
+        }
+
+        // 拨打电话
+        function callDriver() {
+            showToast('正在呼叫司机...');
+        }
+
+        // 聊天
+        function chatDriver() {
+            showToast('打开聊天窗口');
+        }
+
+        // 切换Tab
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach((tab, i) => {
+                if (i === index) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            const titles = ['首页', '订单', '消息', '我的'];
+            showToast('切换到' + titles[index]);
+        }
+
+        // Toast提示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2000);
+        }
+
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.capsule-menu') && !e.target.closest('.menu-overlay')) {
+                document.getElementById('menuOverlay').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

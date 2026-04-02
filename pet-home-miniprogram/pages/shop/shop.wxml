@@ -1,0 +1,37 @@
+<!-- 商城页面 -->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-top">
+      <text class="header-title">宠物商城</text>
+      <view class="cart-btn" bindtap="goToCart">
+        <text>🛒</text>
+        <view class="cart-badge" wx:if="{{cartCount > 0}}">{{cartCount}}</view>
+      </view>
+    </view>
+    <view class="filter-tabs">
+      <view class="filter-tab {{currentFilter === 0 ? 'active' : ''}}" bindtap="switchFilter" data-index="0">推荐</view>
+      <view class="filter-tab {{currentFilter === 1 ? 'active' : ''}}" bindtap="switchFilter" data-index="1">主粮</view>
+      <view class="filter-tab {{currentFilter === 2 ? 'active' : ''}}" bindtap="switchFilter" data-index="2">零食</view>
+      <view class="filter-tab {{currentFilter === 3 ? 'active' : ''}}" bindtap="switchFilter" data-index="3">用品</view>
+      <view class="filter-tab {{currentFilter === 4 ? 'active' : ''}}" bindtap="switchFilter" data-index="4">保健</view>
+    </view>
+  </view>
+
+  <!-- 商品列表 -->
+  <view class="product-list">
+    <view class="product-card" wx:for="{{products}}" wx:key="id" bindtap="onProductTap" data-item="{{item}}">
+      <view class="product-img">
+        <text class="product-tag" wx:if="{{item.tag}}">{{item.tag}}</text>
+        <text class="product-icon">{{item.icon}}</text>
+      </view>
+      <text class="product-name">{{item.name}}</text>
+      <text class="product-desc">{{item.desc}}</text>
+      <view class="product-price">
+        <text class="current-price">¥{{item.currentPrice}}</text>
+        <text class="original-price">¥{{item.originalPrice}}</text>
+      </view>
+      <view class="product-sold">已售 {{item.sold}}</view>
+    </view>
+  </view>
+</view>

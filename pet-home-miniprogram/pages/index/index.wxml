@@ -1,0 +1,168 @@
+<!-- 首页 -->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="header">
+    <view class="location" bindtap="chooseLocation">
+      <text class="location-icon">📍</text>
+      <text class="location-text">{{location.city}}</text>
+      <text class="location-arrow">▼</text>
+    </view>
+    <view class="search-box" bindtap="goToSearch">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索宠物服务、商品" disabled />
+    </view>
+    <view class="notice-btn" bindtap="goToNotice">
+      <text class="notice-icon">🔔</text>
+      <view class="notice-badge pulse" wx:if="{{hasNotice}}"></view>
+    </view>
+  </view>
+
+  <!-- 轮播图 -->
+  <swiper class="banner" indicator-dots="true" autoplay="true" interval="4000" duration="500" circular="true" indicator-color="rgba(255,255,255,0.4)" indicator-active-color="#fff">
+    <swiper-item wx:for="{{banners}}" wx:key="id">
+      <view class="banner-item" style="background: {{item.bg}}" bindtap="onBannerTap" data-item="{{item}}">
+        <view class="banner-content">
+          <text class="banner-title">{{item.title}}</text>
+          <text class="banner-desc">{{item.desc}}</text>
+        </view>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <!-- 宫格入口 -->
+  <view class="grid-menu card">
+    <view class="grid-item" wx:for="{{gridMenus}}" wx:key="id" bindtap="onGridTap" data-item="{{item}}">
+      <view class="grid-icon {{item.color}}">
+        <text>{{item.icon}}</text>
+      </view>
+      <text class="grid-text">{{item.name}}</text>
+    </view>
+  </view>
+
+  <!-- 我的宠物 -->
+  <view class="my-pet-section card" bindtap="goToPetDetail">
+    <view class="pet-card">
+      <view class="pet-avatar">{{currentPet.avatar}}</view>
+      <view class="pet-info">
+        <view class="pet-name">{{currentPet.name}} <text class="pet-breed">{{currentPet.type}} · {{currentPet.age}}</text></view>
+        <view class="pet-tasks">
+          <text class="task-tag urgent" wx:if="{{currentPet.tasks[0].urgent}}">💊 {{currentPet.tasks[0].name}}</text>
+          <text class="task-tag" wx:else>💉 {{currentPet.tasks[0].name}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 宠物运输 -->
+  <view class="transport-section">
+    <view class="section-header">
+      <text class="section-title">🚗 宠物运输动态</text>
+      <text class="section-more" bindtap="goToTransport">查看全部 ></text>
+    </view>
+    <scroll-view class="transport-scroll" scroll-x="true">
+      <view class="transport-list">
+        <view class="transport-card" wx:for="{{transportRoutes}}" wx:key="id" bindtap="onTransportTap" data-item="{{item}}">
+          <view class="transport-img" style="background: {{item.bg}}">
+            <text class="transport-tag">{{item.tag}}</text>
+            <text class="transport-icon">{{item.icon}}</text>
+          </view>
+          <view class="transport-info">
+            <text class="transport-name">{{item.name}}</text>
+            <text class="transport-desc">{{item.desc}}</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 信息流 -->
+  <view class="feed-section">
+    <view class="feed-tabs">
+      <view class="feed-tab {{currentTab === index ? 'active' : ''}}" wx:for="{{feedTabs}}" wx:key="index" bindtap="switchFeedTab" data-index="{{index}}">
+        {{item}}
+      </view>
+    </view>
+
+    <!-- 服务卡片 -->
+    <view class="feed-card" wx:for="{{feedServices}}" wx:key="id" bindtap="onServiceTap" data-item="{{item}}">
+      <view class="feed-service">
+        <view class="feed-service-img">
+          <text class="feed-service-icon">{{item.icon}}</text>
+        </view>
+        <view class="feed-service-info">
+          <text class="feed-service-name">{{item.name}}</text>
+          <text class="feed-service-meta">⭐ {{item.rating}} · {{item.location}} · 距您 {{item.distance}}</text>
+          <text class="feed-service-meta">{{item.desc}}</text>
+          <view class="feed-service-tags">
+            <text class="tag" wx:for="{{item.tags}}" wx:key="index">{{item}}</text>
+          </view>
+        </view>
+        <view class="feed-service-price">
+          <text class="price">¥{{item.price}}</text>
+          <text class="price-unit">/天起</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 社区帖子 -->
+    <view class="feed-card" wx:for="{{feedPosts}}" wx:key="id">
+      <view class="feed-post-header">
+        <view class="feed-post-avatar" style="background: {{item.avatarBg}}">{{item.avatar}}</view>
+        <view class="feed-post-user">
+          <text class="feed-post-username">{{item.username}}</text>
+          <text class="feed-post-time">{{item.time}} · {{item.location}}</text>
+        </view>
+      </view>
+      <text class="feed-post-content">{{item.content}}</text>
+      <view class="feed-post-images" wx:if="{{item.images.length > 0}}">
+        <view class="feed-post-image" wx:for="{{item.images}}" wx:for-item="img" wx:key="index">🖼️</view>
+      </view>
+      <view class="feed-post-actions">
+        <view class="feed-post-action">
+          <text>❤️</text>
+          <text>{{item.likes}}</text>
+        </view>
+        <view class="feed-post-action">
+          <text>💬</text>
+          <text>{{item.comments}}</text>
+        </view>
+        <view class="feed-post-action">
+          <text>⭐</text>
+          <text>{{item.collects}}</text>
+        </view>
+        <view class="feed-post-action">
+          <text>↗️</text>
+          <text>分享</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 商品卡片 -->
+    <view class="feed-card" wx:for="{{feedProducts}}" wx:key="id" bindtap="onProductTap" data-item="{{item}}">
+      <view class="feed-product">
+        <view class="feed-product-img">
+          <text class="feed-product-tag">{{item.tag}}</text>
+          <text class="feed-product-icon">{{item.icon}}</text>
+        </view>
+        <view class="feed-product-info">
+          <text class="feed-product-name">{{item.name}}</text>
+          <text class="feed-product-desc">{{item.desc}}</text>
+          <view class="feed-product-price">
+            <text class="current-price">¥{{item.currentPrice}}</text>
+            <text class="original-price">¥{{item.originalPrice}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 活动卡片 -->
+    <view class="activity-card" bindtap="goToInvite">
+      <text class="activity-title">🎁 邀请好友领现金</text>
+      <text class="activity-desc">邀请好友成功注册，各得50元现金红包</text>
+      <button class="activity-btn">立即邀请</button>
+    </view>
+  </view>
+
+  <!-- 底部留白 -->
+  <view style="height: 40rpx;"></view>
+</view>

@@ -1,0 +1,74 @@
+<!-- 医疗页面 -->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-top">
+      <text class="header-title">宠物医疗</text>
+      <view class="emergency-btn" bindtap="goToEmergency">
+        <text>🚨</text>
+        <text>急诊通道</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="quick-menu card">
+    <view class="menu-item" wx:for="{{quickMenus}}" wx:key="id" bindtap="onMenuTap" data-item="{{item}}">
+      <view class="menu-icon {{item.color}}">{{item.icon}}</view>
+      <text class="menu-text">{{item.name}}</text>
+    </view>
+  </view>
+
+  <!-- AI智能预诊 -->
+  <view class="ai-card">
+    <text class="ai-title">🤖 AI智能预诊</text>
+    <text class="ai-desc">描述症状，AI快速分析可能原因，3分钟获得初步建议，必要时推荐就近医院</text>
+    <button class="ai-btn" bindtap="startDiagnosis">开始预诊</button>
+  </view>
+
+  <!-- 快速症状选择 -->
+  <view class="section">
+    <text class="section-title">快速症状选择</text>
+    <view class="symptom-list">
+      <text class="symptom-tag" wx:for="{{symptoms}}" wx:key="index" bindtap="onSymptomTap" data-item="{{item}}">{{item}}</text>
+    </view>
+  </view>
+
+  <!-- 推荐医生 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">推荐医生</text>
+      <text class="section-more" bindtap="viewAllDoctors">查看全部 ></text>
+    </view>
+    <view class="doctor-card" wx:for="{{doctors}}" wx:key="id" bindtap="onDoctorTap" data-item="{{item}}">
+      <view class="doctor-avatar" style="background: {{item.avatarBg}}">{{item.avatar}}</view>
+      <view class="doctor-info">
+        <text class="doctor-name">{{item.name}}</text>
+        <text class="doctor-meta">{{item.hospital}} | {{item.experience}} | {{item.specialty}}</text>
+        <text class="doctor-price">¥{{item.price}}/次 · 已帮助{{item.helped}}+宠物</text>
+      </view>
+      <button class="consult-btn" catchtap="consultDoctor" data-item="{{item}}">咨询</button>
+    </view>
+  </view>
+
+  <!-- 附近医院 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">附近医院</text>
+      <text class="section-more" bindtap="viewMap">查看地图 ></text>
+    </view>
+    <view class="hospital-card" wx:for="{{hospitals}}" wx:key="id" bindtap="onHospitalTap" data-item="{{item}}">
+      <view class="hospital-avatar" style="background: {{item.avatarBg}}">{{item.avatar}}</view>
+      <view class="hospital-info">
+        <view class="hospital-name-row">
+          <text class="hospital-name">{{item.name}}</text>
+          <text class="hospital-rating">⭐ {{item.rating}}</text>
+        </view>
+        <text class="hospital-location">📍 距您{{item.distance}} · {{item.service}}</text>
+        <view class="hospital-tags">
+          <text class="tag" wx:for="{{item.tags}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

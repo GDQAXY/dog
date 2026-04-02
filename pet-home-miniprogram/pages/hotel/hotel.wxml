@@ -1,0 +1,41 @@
+<!-- 酒店页面 -->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-top">
+      <text class="header-title">宠物酒店</text>
+      <view class="map-btn" bindtap="viewMap">
+        <text>🗺️</text>
+        <text>地图</text>
+      </view>
+    </view>
+    <view class="filter-tabs">
+      <view class="filter-tab {{currentFilter === 0 ? 'active' : ''}}" bindtap="switchFilter" data-index="0">距我最近</view>
+      <view class="filter-tab {{currentFilter === 1 ? 'active' : ''}}" bindtap="switchFilter" data-index="1">好评优先</view>
+      <view class="filter-tab {{currentFilter === 2 ? 'active' : ''}}" bindtap="switchFilter" data-index="2">价格最低</view>
+      <view class="filter-tab {{currentFilter === 3 ? 'active' : ''}}" bindtap="switchFilter" data-index="3">五星豪华</view>
+    </view>
+  </view>
+
+  <!-- 酒店列表 -->
+  <view class="hotel-list">
+    <view class="hotel-card" wx:for="{{hotels}}" wx:key="id" bindtap="onHotelTap" data-item="{{item}}">
+      <view class="hotel-avatar" style="background: {{item.bg}}">{{item.icon}}</view>
+      <view class="hotel-info">
+        <view class="hotel-name-row">
+          <text class="hotel-name">{{item.name}}</text>
+          <text class="hotel-rating">⭐ {{item.rating}}</text>
+        </view>
+        <text class="hotel-location">{{item.location}}</text>
+        <text class="hotel-desc">{{item.desc}}</text>
+        <view class="hotel-tags">
+          <text class="tag" wx:for="{{item.tags}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+      <view class="hotel-price">
+        <text class="price">¥{{item.price}}</text>
+        <text class="price-unit">/天起</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>宠物档案 - AI医疗</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            padding: 15px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-actions span {
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        /* 宠物选择栏 */
+        .pet-selector {
+            background: white;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .pet-selector::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pet-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            border: 2px solid transparent;
+        }
+
+        .pet-chip.active {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .pet-chip-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .pet-chip-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .add-pet-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* 健康概览 */
+        .health-overview {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            margin: 15px;
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+        }
+
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .pet-info-main {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .pet-avatar-large {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .pet-info-text h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .pet-info-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .health-score {
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .score-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .health-indicators {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .indicator-item {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .indicator-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .indicator-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .indicator-label {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        /* 档案卡片 */
+        .section-card {
+            background: white;
+            margin: 15px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-action {
+            color: #11998e;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* 疫苗记录 */
+        .vaccine-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .vaccine-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .vaccine-icon {
+            width: 44px;
+            height: 44px;
+            background: #e8f5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .vaccine-info {
+            flex: 1;
+        }
+
+        .vaccine-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .vaccine-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .vaccine-status {
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .vaccine-status.valid {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .vaccine-status.warning {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .vaccine-status.expired {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        /* 驱虫记录 */
+        .deworm-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .deworm-timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e0e0e0;
+        }
+
+        .deworm-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .deworm-dot {
+            position: absolute;
+            left: -26px;
+            width: 18px;
+            height: 18px;
+            background: #11998e;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .deworm-content {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .deworm-type {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .deworm-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .next-deworm {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #ddd;
+            font-size: 12px;
+            color: #ff9800;
+        }
+
+        /* 病历记录 */
+        .medical-records {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .record-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #11998e;
+        }
+
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .record-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .record-type {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .record-type.consult {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .record-type.treatment {
+            background: #f3e5f5;
+            color: #9c27b0;
+        }
+
+        .record-type.checkup {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .record-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .record-hospital {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .record-result {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #333;
+        }
+
+        /* 体检数据 */
+        .checkup-data {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .data-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .data-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .data-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .data-trend {
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .data-trend.up {
+            color: #f44336;
+        }
+
+        .data-trend.down {
+            color: #4caf50;
+        }
+
+        .data-trend.normal {
+            color: #999;
+        }
+
+        /* 用药提醒 */
+        .medication-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .medication-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .medication-icon {
+            width: 44px;
+            height: 44px;
+            background: #fff3e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .medication-info {
+            flex: 1;
+        }
+
+        .medication-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .medication-schedule {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .medication-status {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .medication-status.pending {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .medication-status.done {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        /* 健康趋势图 */
+        .trend-chart {
+            height: 150px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            text-align: center;
+            color: #666;
+        }
+
+        .chart-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        /* 档案信息 */
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .profile-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .profile-label {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .profile-value {
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* 底部按钮 */
+        .bottom-actions {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: white;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: #f5f5f5;
+            border: none;
+            padding: 14px;
+            border-radius: 25px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        /* 提示 */
+        .reminder-banner {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 12px 15px;
+            margin: 0 15px 15px;
+            border-radius: 0 10px 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .reminder-icon {
+            font-size: 24px;
+        }
+
+        .reminder-text {
+            flex: 1;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        .reminder-action {
+            background: #ff9800;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+        }
+
+        .toast.active {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <span class="back-btn" onclick="goBack()">←</span>
+                <span class="header-title">📋 宠物健康档案</span>
+                <div class="header-actions">
+                    <span onclick="showToast('分享档案')">↗️</span>
+                    <span onclick="showToast('更多选项')">⋮</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 宠物选择 -->
+        <div class="pet-selector">
+            <div class="pet-chip active" onclick="switchPet(0)">
+                <div class="pet-chip-avatar" style="background: #ffecd2;">🐶</div>
+                <span class="pet-chip-name">豆豆</span>
+            </div>
+            <div class="pet-chip" onclick="switchPet(1)">
+                <div class="pet-chip-avatar" style="background: #e3f2fd;">🐱</div>
+                <span class="pet-chip-name">咪咪</span>
+            </div>
+            <div class="add-pet-btn" onclick="addPet()">+</div>
+        </div>
+
+        <!-- 提醒横幅 -->
+        <div class="reminder-banner">
+            <span class="reminder-icon">💉</span>
+            <span class="reminder-text">狂犬疫苗将在30天后到期</span>
+            <span class="reminder-action" onclick="showToast('已预约疫苗')">去预约</span>
+        </div>
+
+        <!-- 健康概览 -->
+        <div class="health-overview">
+            <div class="overview-header">
+                <div class="pet-info-main">
+                    <div class="pet-avatar-large">🐶</div>
+                    <div class="pet-info-text">
+                        <h2>豆豆</h2>
+                        <p>泰迪 · 3岁2个月 · 5.2kg · ♂</p>
+                    </div>
+                </div>
+                <div class="health-score">
+                    <div class="score-value">92</div>
+                    <div class="score-label">健康分</div>
+                </div>
+            </div>
+            <div class="health-indicators">
+                <div class="indicator-item">
+                    <div class="indicator-icon">💉</div>
+                    <div class="indicator-value">2/3</div>
+                    <div class="indicator-label">疫苗接种</div>
+                </div>
+                <div class="indicator-item">
+                    <div class="indicator-icon">🐛</div>
+                    <div class="indicator-value">✓</div>
+                    <div class="indicator-label">驱虫状态</div>
+                </div>
+                <div class="indicator-item">
+                    <div class="indicator-icon">🏥</div>
+                    <div class="indicator-value">5次</div>
+                    <div class="indicator-label">就诊记录</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 疫苗记录 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">💉 疫苗记录</div>
+                <span class="section-action" onclick="showToast('添加疫苗记录')">+ 添加</span>
+            </div>
+            <div class="vaccine-list">
+                <div class="vaccine-item">
+                    <div class="vaccine-icon">💉</div>
+                    <div class="vaccine-info">
+                        <div class="vaccine-name">狂犬疫苗</div>
+                        <div class="vaccine-date">接种：2023-08-15 · 有效期至：2024-08-15</div>
+                    </div>
+                    <span class="vaccine-status warning">30天后到期</span>
+                </div>
+                <div class="vaccine-item">
+                    <div class="vaccine-icon">💉</div>
+                    <div class="vaccine-info">
+                        <div class="vaccine-name">八联疫苗（第3针）</div>
+                        <div class="vaccine-date">接种：2023-05-20 · 有效期至：2024-05-20</div>
+                    </div>
+                    <span class="vaccine-status valid">✓ 有效</span>
+                </div>
+                <div class="vaccine-item">
+                    <div class="vaccine-icon">💉</div>
+                    <div class="vaccine-info">
+                        <div class="vaccine-name">八联疫苗（第2针）</div>
+                        <div class="vaccine-date">接种：2023-04-15 · 已完成</div>
+                    </div>
+                    <span class="vaccine-status valid">✓ 已完成</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 驱虫记录 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">🐛 驱虫记录</div>
+                <span class="section-action" onclick="showToast('添加驱虫记录')">+ 添加</span>
+            </div>
+            <div class="deworm-timeline">
+                <div class="deworm-item">
+                    <div class="deworm-dot"></div>
+                    <div class="deworm-content">
+                        <div class="deworm-type">体内外同驱 - 大宠爱</div>
+                        <div class="deworm-date">2024-01-15 · 剂量：0.5ml</div>
+                        <div class="next-deworm">下次驱虫：2024-02-15（还有15天）</div>
+                    </div>
+                </div>
+                <div class="deworm-item">
+                    <div class="deworm-dot"></div>
+                    <div class="deworm-content">
+                        <div class="deworm-type">体内驱虫 - 拜宠清</div>
+                        <div class="deworm-date">2023-12-15 · 剂量：1片</div>
+                    </div>
+                </div>
+                <div class="deworm-item">
+                    <div class="deworm-dot"></div>
+                    <div class="deworm-content">
+                        <div class="deworm-type">体外驱虫 - 福来恩</div>
+                        <div class="deworm-date">2023-11-15 · 剂量：1支</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用药提醒 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">💊 用药提醒</div>
+                <span class="section-action" onclick="showToast('添加用药')">+ 添加</span>
+            </div>
+            <div class="medication-list">
+                <div class="medication-item">
+                    <div class="medication-icon">💊</div>
+                    <div class="medication-info">
+                        <div class="medication-name">关节保健片</div>
+                        <div class="medication-schedule">每日1次 · 饭后服用 · 还剩7天</div>
+                    </div>
+                    <span class="medication-status pending">待喂</span>
+                </div>
+                <div class="medication-item">
+                    <div class="medication-icon">💊</div>
+                    <div class="medication-info">
+                        <div class="medication-name">益生菌</div>
+                        <div class="medication-schedule">每日2次 · 早晚各1粒 · 已喂</div>
+                    </div>
+                    <span class="medication-status done">已喂</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 病历记录 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">📋 病历记录</div>
+                <span class="section-action" onclick="showToast('查看全部')">查看全部 ></span>
+            </div>
+            <div class="medical-records">
+                <div class="record-item">
+                    <div class="record-header">
+                        <span class="record-date">2024-01-10</span>
+                        <span class="record-type consult">在线问诊</span>
+                    </div>
+                    <div class="record-title">皮肤瘙痒咨询</div>
+                    <div class="record-hospital">👨‍⚕️ 张医生 · 瑞鹏宠物医院</div>
+                    <div class="record-result">诊断：季节性过敏。建议：服用抗过敏药，保持环境清洁。</div>
+                </div>
+                <div class="record-item">
+                    <div class="record-header">
+                        <span class="record-date">2023-09-20</span>
+                        <span class="record-type checkup">健康体检</span>
+                    </div>
+                    <div class="record-title">年度全面体检</div>
+                    <div class="record-hospital">🏥 瑞鹏宠物医院（朝阳店）</div>
+                    <div class="record-result">结果：各项指标正常，体重略超标，建议控制饮食。</div>
+                </div>
+                <div class="record-item">
+                    <div class="record-header">
+                        <span class="record-date">2023-06-15</span>
+                        <span class="record-type treatment">疾病治疗</span>
+                    </div>
+                    <div class="record-title">肠胃炎治疗</div>
+                    <div class="record-hospital">🏥 爱宠动物医院</div>
+                    <div class="record-result">症状：呕吐、腹泻。治疗：输液2天，服用消炎药，已痊愈。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 体检数据 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">📊 体检数据</div>
+                <span class="section-action" onclick="showToast('查看历史趋势')">趋势图 ></span>
+            </div>
+            <div class="checkup-data">
+                <div class="data-item">
+                    <div class="data-label">体重</div>
+                    <div class="data-value">5.2kg</div>
+                    <div class="data-trend up">↑ 0.3kg</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">体温</div>
+                    <div class="data-value">38.5°C</div>
+                    <div class="data-trend normal">- 正常</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">心率</div>
+                    <div class="data-value">110bpm</div>
+                    <div class="data-trend normal">- 正常</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">血氧</div>
+                    <div class="data-value">98%</div>
+                    <div class="data-trend normal">- 正常</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 健康趋势 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">📈 健康趋势</div>
+                <span class="section-action">近6个月</span>
+            </div>
+            <div class="trend-chart">
+                <div class="chart-placeholder">
+                    <div class="chart-icon">📊</div>
+                    <div>体重变化趋势图</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 档案信息 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">📝 基本信息</div>
+                <span class="section-action" onclick="showToast('编辑信息')">编辑</span>
+            </div>
+            <div class="profile-info-grid">
+                <div class="profile-item">
+                    <div class="profile-label">品种</div>
+                    <div class="profile-value">泰迪（贵宾犬）</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">性别</div>
+                    <div class="profile-value">公（已绝育）</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">出生日期</div>
+                    <div class="profile-value">2021-02-15</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">毛色</div>
+                    <div class="profile-value">棕色</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">芯片号</div>
+                    <div class="profile-value">9001-****-****</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">血型</div>
+                    <div class="profile-value">DEA 1.1 阴性</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">过敏史</div>
+                    <div class="profile-value">花粉、尘螨</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">保险公司</div>
+                    <div class="profile-value">平安宠物险</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部按钮 -->
+        <div class="bottom-actions">
+            <button class="btn-secondary" onclick="showToast('导出档案')">📄 导出档案</button>
+            <button class="btn-primary" onclick="showToast('预约体检')">🏥 预约体检</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function goBack() {
+            window.location.href = '宠物之家小程序演示.html';
+        }
+
+        function switchPet(index) {
+            document.querySelectorAll('.pet-chip').forEach((chip, i) => {
+                chip.classList.toggle('active', i === index);
+            });
+            showToast(['切换到：豆豆', '切换到：咪咪'][index]);
+        }
+
+        function addPet() {
+            showToast('添加新宠物');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

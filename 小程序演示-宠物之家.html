@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>宠物之家 - 小程序演示</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* iPhone 外框 */
+        .phone-frame {
+            width: 390px;
+            height: 844px;
+            background: #1a1a1a;
+            border-radius: 55px;
+            padding: 12px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3), inset 0 0 0 2px #333;
+            position: relative;
+        }
+
+        /* 灵动岛 */
+        .dynamic-island {
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 126px;
+            height: 37px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 1000;
+        }
+
+        /* 屏幕 */
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #f5f7fa;
+            border-radius: 43px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            height: 54px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 12px 28px 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .status-time { font-size: 17px; }
+        .status-icons { display: flex; gap: 5px; font-size: 14px; }
+
+        /* 小程序导航 */
+        .mp-nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 6px 16px 12px;
+            position: relative;
+        }
+
+        .mp-nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .mp-back {
+            position: absolute;
+            left: 0;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .mp-title { color: white; font-size: 17px; font-weight: 600; }
+
+        .capsule-menu {
+            position: absolute;
+            right: 0;
+            display: flex;
+            background: rgba(0,0,0,0.15);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .capsule-dot {
+            width: 20px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .capsule-dot::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 -10px 0 white, 0 10px 0 white;
+        }
+
+        .capsule-line {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            margin: 7px 0;
+        }
+
+        .capsule-x {
+            width: 42px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        /* 菜单遮罩 */
+        .menu-overlay {
+            position: fixed;
+            top: 100px;
+            right: 25px;
+            background: rgba(0,0,0,0.85);
+            border-radius: 12px;
+            padding: 8px 0;
+            min-width: 150px;
+            display: none;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-overlay.active { display: block; }
+
+        .menu-item {
+            padding: 12px 18px;
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .menu-item:active { background: rgba(255,255,255,0.1); }
+
+        /* 可滚动内容 */
+        .scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .scroll-content::-webkit-scrollbar { display: none; }
+
+        /* 页面容器 */
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 首页内容 */
+        .container { padding-bottom: 20px; }
+
+        /* 搜索栏 */
+        .search-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0 16px 16px;
+        }
+
+        .search-box {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            flex: 1;
+            outline: none;
+            color: white;
+            font-size: 14px;
+        }
+
+        .search-box input::placeholder { color: rgba(255,255,255,0.6); }
+
+        /* 轮播图 */
+        .banner {
+            margin: 16px;
+            height: 160px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .banner-slide {
+            position: absolute;
+            inset: 0;
+            padding: 24px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .banner-slide.active { opacity: 1; }
+
+        .banner-slide h3 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+        .banner-slide p { font-size: 13px; opacity: 0.9; }
+
+        .banner-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dot.active { background: white; width: 18px; border-radius: 3px; }
+
+        /* 宫格菜单 */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px 8px;
+            padding: 20px 16px;
+            background: white;
+            margin: 0 16px 12px;
+            border-radius: 16px;
+        }
+
+        .grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .grid-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+
+        .grid-icon.blue { background: linear-gradient(135deg, #e3f2fd, #bbdefb); }
+        .grid-icon.green { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+        .grid-icon.orange { background: linear-gradient(135deg, #fff3e0, #ffe0b2); }
+        .grid-icon.pink { background: linear-gradient(135deg, #fce4ec, #f8bbd9); }
+        .grid-icon.red { background: linear-gradient(135deg, #ffebee, #ffcdd2); }
+        .grid-icon.cyan { background: linear-gradient(135deg, #e0f7fa, #b2ebf2); }
+        .grid-icon.yellow { background: linear-gradient(135deg, #fffde7, #fff9c4); }
+        .grid-icon.purple { background: linear-gradient(135deg, #f3e5f5, #e1bee7); }
+
+        .grid-item span { font-size: 11px; color: #333; }
+
+        /* 我的宠物卡片 */
+        .pet-card-section {
+            padding: 0 16px;
+            margin-bottom: 12px;
+        }
+
+        .pet-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .pet-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .pet-info { flex: 1; }
+        .pet-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .pet-name span { font-size: 13px; opacity: 0.85; font-weight: 400; }
+        .pet-tags { display: flex; gap: 8px; margin-top: 10px; }
+        .pet-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 14px;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+        }
+        .pet-tag.urgent {
+            background: rgba(255, 71, 87, 0.9);
+            animation: urgentPulse 2s infinite;
+        }
+
+        @keyframes urgentPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(255, 71, 87, 0); }
+        }
+
+        /* 横向滑动服务 */
+        .service-scroll {
+            background: white;
+            margin: 0 16px 12px;
+            border-radius: 16px;
+            padding: 16px 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .section-more {
+            font-size: 12px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .service-list {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 16px;
+            gap: 12px;
+            scrollbar-width: none;
+        }
+
+        .service-list::-webkit-scrollbar { display: none; }
+
+        .service-card {
+            flex-shrink: 0;
+            width: 260px;
+            background: #f8f9fa;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .service-img {
+            height: 120px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            position: relative;
+        }
+
+        .service-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .service-info { padding: 14px; }
+        .service-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .service-desc { font-size: 12px; color: #666; }
+
+        /* Feed卡片 */
+        .feed-card {
+            background: white;
+            margin: 0 16px 12px;
+            border-radius: 16px;
+            padding: 14px;
+        }
+
+        .feed-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .feed-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .feed-user { flex: 1; }
+        .feed-username { font-size: 15px; font-weight: 600; }
+        .feed-time { font-size: 11px; color: #999; }
+
+        .feed-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .feed-images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .feed-image {
+            aspect-ratio: 1;
+            background: #f5f5f5;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .feed-actions {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 10px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .feed-action {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 商品卡片 */
+        .product-card {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .product-img {
+            width: 80px;
+            height: 80px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            position: relative;
+        }
+
+        .product-tag {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .product-info { flex: 1; }
+        .product-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .product-desc { font-size: 11px; color: #999; margin-bottom: 6px; }
+        .product-price { display: flex; align-items: baseline; gap: 6px; }
+        .current-price { font-size: 16px; font-weight: 700; color: #ff4757; }
+        .original-price { font-size: 11px; color: #999; text-decoration: line-through; }
+
+        /* 活动卡片 */
+        .activity-card {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            margin: 0 16px 12px;
+            border-radius: 20px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .activity-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+        .activity-desc { font-size: 13px; opacity: 0.95; margin-bottom: 14px; }
+        .activity-btn {
+            background: white;
+            color: #f5576c;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            display: inline-block;
+        }
+
+        /* 我的页面 */
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px 20px 24px;
+            color: white;
+            position: relative;
+        }
+
+        .profile-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .profile-avatar-wrap { position: relative; }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .vip-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 2px solid white;
+        }
+
+        .profile-info { flex: 1; }
+        .profile-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .profile-meta { font-size: 12px; opacity: 0.9; }
+        .profile-id { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .stat-item h4 { font-size: 20px; font-weight: 700; }
+        .stat-item p { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+
+        /* 功能模块 */
+        .module-section {
+            background: white;
+            margin: 12px 16px;
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .module-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            color: #1a1a1a;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .module-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .module-icon {
+            width: 44px;
+            height: 44px;
+            background: #f5f7fa;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            position: relative;
+        }
+
+        .module-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 16px;
+            height: 16px;
+            background: #ff4757;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        .module-name { font-size: 11px; color: #666; }
+
+        /* 列表菜单 */
+        .menu-list {
+            background: white;
+            margin: 0 16px 12px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .menu-item:last-child { border-bottom: none; }
+
+        .menu-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+
+        .menu-text { flex: 1; font-size: 15px; }
+        .menu-arrow { color: #ccc; font-size: 14px; }
+
+        /* Tab Bar */
+        .tab-bar {
+            height: 84px;
+            background: white;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 8px;
+            position: relative;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 20px;
+            color: #999;
+            font-size: 10px;
+        }
+
+        .tab-item.active { color: #667eea; }
+
+        .tab-icon { font-size: 24px; }
+
+        .tab-center {
+            margin-top: -18px;
+            padding: 0;
+        }
+
+        .tab-center-btn {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Home Indicator */
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 134px;
+            height: 5px;
+            background: #000;
+            border-radius: 3px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* 发布弹窗 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: flex-end;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        .modal-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 24px; }
+
+        .modal-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .modal-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .modal-option span { font-size: 12px; color: #333; }
+        .modal-cancel { margin-top: 20px; padding: 16px; text-align: center; font-size: 16px; color: #666; border-top: 1px solid #f5f5f5; }
+
+        /* 演示标签 */
+        .demo-badge {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .demo-info {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-badge">🐾 宠物之家小程序</div>
+
+    <div class="phone-frame">
+        <div class="dynamic-island"></div>
+
+        <div class="phone-screen">
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <span class="status-time" id="statusTime">9:41</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <!-- 小程序导航 -->
+            <div class="mp-nav">
+                <div class="mp-nav-content">
+                    <div class="mp-back" onclick="goBack()">‹</div>
+                    <span class="mp-title" id="pageTitle">宠物之家</span>
+                    <div class="capsule-menu" onclick="toggleMenu()">
+                        <div class="capsule-dot"></div>
+                        <div class="capsule-line"></div>
+                        <div class="capsule-x">×</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 菜单 -->
+            <div class="menu-overlay" id="menuOverlay">
+                <div class="menu-item" onclick="showShare()">↗️ 分享</div>
+                <div class="menu-item" onclick="showToast('已刷新')">🔄 刷新</div>
+                <div class="menu-item" onclick="showToast('搜索')">🔍 搜索</div>
+            </div>
+
+            <!-- 可滚动内容 -->
+            <div class="scroll-content">
+                <!-- 首页 -->
+                <div class="page active" id="page-home">
+                    <div class="container">
+                        <!-- 搜索栏 -->
+                        <div class="search-section">
+                            <div class="search-box">
+                                <span>🔍</span>
+                                <input type="text" placeholder="搜索宠物服务、商品">
+                            </div>
+                        </div>
+
+                        <!-- 轮播图 -->
+                        <div class="banner">
+                            <div class="banner-slide active" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                                <h3>新人专享礼包</h3>
+                                <p>注册即领188元优惠券</p>
+                            </div>
+                            <div class="banner-slide" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                                <h3>宠物寄养</h3>
+                                <p>认证养家，安全有保障</p>
+                            </div>
+                            <div class="banner-slide" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                                <h3>AI智能问诊</h3>
+                                <p>24小时在线，3分钟获专业建议</p>
+                            </div>
+                            <div class="banner-dots">
+                                <div class="dot active" onclick="goToSlide(0)"></div>
+                                <div class="dot" onclick="goToSlide(1)"></div>
+                                <div class="dot" onclick="goToSlide(2)"></div>
+                            </div>
+                        </div>
+
+                        <!-- 宫格菜单 -->
+                        <div class="grid-menu">
+                            <div class="grid-item" onclick="showToast('宠物寄养')">
+                                <div class="grid-icon blue">🏠</div>
+                                <span>寄养</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('宠物医疗')">
+                                <div class="grid-icon green">⚕️</div>
+                                <span>医疗</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('宠物运输')">
+                                <div class="grid-icon orange">🚗</div>
+                                <span>运输</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('宠物商城')">
+                                <div class="grid-icon pink">🍖</div>
+                                <span>商城</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('宠物酒店')">
+                                <div class="grid-icon red">🏨</div>
+                                <span>酒店</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('二手闲置')">
+                                <div class="grid-icon cyan">📦</div>
+                                <span>闲置</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('领券中心')">
+                                <div class="grid-icon yellow">🎫</div>
+                                <span>领券</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('宠物社区')">
+                                <div class="grid-icon purple">💬</div>
+                                <span>社区</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('宠物美容')">
+                                <div class="grid-icon pink">✂️</div>
+                                <span>美容</span>
+                            </div>
+                            <div class="grid-item" onclick="showToast('更多服务')">
+                                <div class="grid-icon blue">⋮</div>
+                                <span>更多</span>
+                            </div>
+                        </div>
+
+                        <!-- 我的宠物 -->
+                        <div class="pet-card-section">
+                            <div class="pet-card" onclick="showToast('查看宠物详情')">
+                                <div class="pet-avatar">🐶</div>
+                                <div class="pet-info">
+                                    <div class="pet-name">豆豆 <span>金毛 · 3岁</span></div>
+                                    <div class="pet-tags">
+                                        <span class="pet-tag urgent">💊 待喂药</span>
+                                        <span class="pet-tag">💉 疫苗齐全</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 宠物运输 -->
+                        <div class="service-scroll">
+                            <div class="section-header">
+                                <div class="section-title">🚗 宠物运输</div>
+                                <div class="section-more">全部 ></div>
+                            </div>
+                            <div class="service-list">
+                                <div class="service-card" onclick="showToast('北京→上海')">
+                                    <div class="service-img">🚗</div>
+                                    <div class="service-info">
+                                        <div class="service-name">北京 → 上海</div>
+                                        <div class="service-desc">专车直达 · 24小时达 · ¥680起</div>
+                                    </div>
+                                </div>
+                                <div class="service-card" onclick="showToast('北京→广州')">
+                                    <div class="service-img" style="background: linear-gradient(135deg, #f093fb, #f5576c);">✈️</div>
+                                    <div class="service-info">
+                                        <div class="service-name">北京 → 广州</div>
+                                        <div class="service-desc">航空托运 · 当日达 · ¥980起</div>
+                                    </div>
+                                </div>
+                                <div class="service-card" onclick="showToast('北京→天津')">
+                                    <div class="service-img" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">🚙</div>
+                                    <div class="service-info">
+                                        <div class="service-name">北京 → 天津</div>
+                                        <div class="service-desc">顺风车 · 2小时达 · ¥150起</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 社区动态 -->
+                        <div class="feed-card">
+                            <div class="feed-header">
+                                <div class="feed-avatar">👩</div>
+                                <div class="feed-user">
+                                    <div class="feed-username">豆豆妈妈</div>
+                                    <div class="feed-time">2小时前 · 北京市</div>
+                                </div>
+                            </div>
+                            <div class="feed-content">
+                                今天带豆豆去公园玩，遇到了一只超级可爱的柯基！两只狗狗玩得好开心~ 🐶💕
+                            </div>
+                            <div class="feed-images">
+                                <div class="feed-image">🖼️</div>
+                                <div class="feed-image">🖼️</div>
+                                <div class="feed-image">🖼️</div>
+                            </div>
+                            <div class="feed-actions">
+                                <div class="feed-action">❤️ 128</div>
+                                <div class="feed-action">💬 23</div>
+                                <div class="feed-action">⭐ 45</div>
+                                <div class="feed-action">↗️ 分享</div>
+                            </div>
+                        </div>
+
+                        <!-- 商品推荐 -->
+                        <div class="feed-card">
+                            <div class="product-card" onclick="showToast('进口狗粮')">
+                                <div class="product-img">
+                                    <span class="product-tag">秒杀</span>
+                                    🥩
+                                </div>
+                                <div class="product-info">
+                                    <div class="product-name">进口冻干狗粮 500g</div>
+                                    <div class="product-desc">已有 1.2万+ 人拼单</div>
+                                    <div class="product-price">
+                                        <span class="current-price">¥29</span>
+                                        <span class="original-price">¥59</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 活动 -->
+                        <div class="activity-card" onclick="showToast('邀请好友')">
+                            <div class="activity-title">🎁 邀请好友领现金</div>
+                            <div class="activity-desc">邀请好友成功注册，各得50元现金红包</div>
+                            <button class="activity-btn">立即邀请</button>
+                        </div>
+
+                        <div style="height: 20px;"></div>
+                    </div>
+                </div>
+
+                <!-- 我的页面 -->
+                <div class="page" id="page-profile">
+                    <div class="profile-header">
+                        <div class="profile-top">
+                            <div class="profile-avatar-wrap">
+                                <div class="profile-avatar">👤</div>
+                                <div class="vip-badge">VIP</div>
+                            </div>
+                            <div class="profile-info">
+                                <div class="profile-name">宠物主人</div>
+                                <div class="profile-meta">📍 北京 · 朝阳区 | 🐶 1只宠物</div>
+                                <div class="profile-id">ID: 88456621</div>
+                            </div>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="stat-item"><h4>12</h4><p>收藏</p></div>
+                            <div class="stat-item"><h4>86</h4><p>关注</p></div>
+                            <div class="stat-item"><h4>1.2k</h4><p>粉丝</p></div>
+                            <div class="stat-item"><h4>256</h4><p>获赞</p></div>
+                        </div>
+                    </div>
+
+                    <div style="padding-top: 12px;">
+                        <!-- 我的宠物 -->
+                        <div class="module-section">
+                            <div class="module-title">🐾 我的宠物</div>
+                            <div class="module-grid">
+                                <div class="module-item" onclick="showToast('豆豆')">
+                                    <div class="module-icon">🐶</div>
+                                    <span class="module-name">豆豆</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('添加宠物')">
+                                    <div class="module-icon">➕</div>
+                                    <span class="module-name">添加</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 我的订单 -->
+                        <div class="module-section">
+                            <div class="module-title">📋 我的订单</div>
+                            <div class="module-grid">
+                                <div class="module-item" onclick="showToast('待付款')">
+                                    <div class="module-icon">
+                                        💳
+                                        <span class="module-badge">2</span>
+                                    </div>
+                                    <span class="module-name">待付款</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('待服务')">
+                                    <div class="module-icon">
+                                        ⏳
+                                        <span class="module-badge">1</span>
+                                    </div>
+                                    <span class="module-name">待服务</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('进行中')">
+                                    <div class="module-icon">🔄</div>
+                                    <span class="module-name">进行中</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('待评价')">
+                                    <div class="module-icon">
+                                        ⭐
+                                        <span class="module-badge">3</span>
+                                    </div>
+                                    <span class="module-name">待评价</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('退款/售后')">
+                                    <div class="module-icon">🛡️</div>
+                                    <span class="module-name">售后</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 我的服务 -->
+                        <div class="module-section">
+                            <div class="module-title">🎯 我的服务</div>
+                            <div class="module-grid">
+                                <div class="module-item" onclick="showToast('我的发布')">
+                                    <div class="module-icon">📝</div>
+                                    <span class="module-name">我的发布</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('我的收藏')">
+                                    <div class="module-icon">❤️</div>
+                                    <span class="module-name">我的收藏</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('浏览记录')">
+                                    <div class="module-icon">👁️</div>
+                                    <span class="module-name">浏览记录</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('我的评价')">
+                                    <div class="module-icon">💬</div>
+                                    <span class="module-name">我的评价</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('会员中心')">
+                                    <div class="module-icon">👑</div>
+                                    <span class="module-name">会员中心</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('邀请有礼')">
+                                    <div class="module-icon">🎁</div>
+                                    <span class="module-name">邀请有礼</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('成为养家')">
+                                    <div class="module-icon">🏠</div>
+                                    <span class="module-name">成为养家</span>
+                                </div>
+                                <div class="module-item" onclick="showToast('地址管理')">
+                                    <div class="module-icon">📍</div>
+                                    <span class="module-name">地址管理</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 菜单列表 -->
+                        <div class="menu-list">
+                            <div class="menu-item" onclick="showToast('帮助中心')">
+                                <div class="menu-icon" style="background: #e3f2fd;">❓</div>
+                                <span class="menu-text">帮助中心</span>
+                                <span class="menu-arrow">›</span>
+                            </div>
+                            <div class="menu-item" onclick="showToast('联系客服')">
+                                <div class="menu-icon" style="background: #e8f5e9;">💬</div>
+                                <span class="menu-text">联系客服</span>
+                                <span class="menu-arrow">›</span>
+                            </div>
+                            <div class="menu-item" onclick="showToast('意见反馈')">
+                                <div class="menu-icon" style="background: #fff3e0;">✏️</div>
+                                <span class="menu-text">意见反馈</span>
+                                <span class="menu-arrow">›</span>
+                            </div>
+                            <div class="menu-item" onclick="showToast('设置')">
+                                <div class="menu-icon" style="background: #f3e5f5;">⚙️</div>
+                                <span class="menu-text">设置</span>
+                                <span class="menu-arrow">›</span>
+                            </div>
+                        </div>
+
+                        <div style="height: 30px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Bar -->
+            <div class="tab-bar">
+                <div class="tab-item active" onclick="switchTab('home', this)">
+                    <div class="tab-icon">🏠</div>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item center" onclick="showPublish()">
+                    <div class="tab-center-btn">+</div>
+                </div>
+                <div class="tab-item" onclick="switchTab('profile', this)">
+                    <div class="tab-icon">👤</div>
+                    <span>我的</span>
+                </div>
+            </div>
+
+            <!-- Home Indicator -->
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+
+    <div class="demo-info">iPhone 14 Pro 尺寸 · 390×844</div>
+
+    <!-- 发布弹窗 -->
+    <div class="modal-overlay" id="publishModal" onclick="closePublish(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title">发布</div>
+            <div class="modal-options">
+                <div class="modal-option" onclick="showToast('发布寄养需求')">
+                    <div class="modal-icon" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb);">🏠</div>
+                    <span>寄养需求</span>
+                </div>
+                <div class="modal-option" onclick="showToast('发布二手商品')">
+                    <div class="modal-icon" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2);">📦</div>
+                    <span>二手闲置</span>
+                </div>
+                <div class="modal-option" onclick="showToast('成为养家')">
+                    <div class="modal-icon" style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9);">🏡</div>
+                    <span>成为养家</span>
+                </div>
+                <div class="modal-option" onclick="showToast('发布动态')">
+                    <div class="modal-icon" style="background: linear-gradient(135deg, #fce4ec, #f8bbd9);">📷</div>
+                    <span>发动态</span>
+                </div>
+            </div>
+            <div class="modal-cancel" onclick="closePublish()">取消</div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('statusTime').textContent = hours + ':' + minutes;
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // 轮播图
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.banner-slide');
+        const dots = document.querySelectorAll('.dot');
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function goToSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, 4000);
+
+        // Tab切换
+        function switchTab(pageName, el) {
+            document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById('page-' + pageName).classList.add('active');
+
+            document.getElementById('pageTitle').textContent = pageName === 'home' ? '宠物之家' : '我的';
+        }
+
+        // 返回
+        function goBack() {
+            showToast('返回上一页');
+        }
+
+        // 菜单
+        function toggleMenu() {
+            document.getElementById('menuOverlay').classList.toggle('active');
+        }
+
+        // 分享
+        function showShare() {
+            showToast('分享功能');
+            document.getElementById('menuOverlay').classList.remove('active');
+        }
+
+        // 发布弹窗
+        function showPublish() {
+            document.getElementById('publishModal').classList.add('active');
+        }
+
+        function closePublish(event) {
+            if (!event || event.target.id === 'publishModal') {
+                document.getElementById('publishModal').classList.remove('active');
+            }
+        }
+
+        // Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.capsule-menu') && !e.target.closest('.menu-overlay')) {
+                document.getElementById('menuOverlay').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
